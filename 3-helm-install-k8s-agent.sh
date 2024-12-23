@@ -23,6 +23,24 @@
 
 #------------------------------------------------------------------------------
 
+CONTEXTS=$(kubectl config get-contexts  --no-headers=true | awk '{print $2}')
+
+echo "Select management cluster context or CTRL-C to quit"
+select CONTEXT in $CONTEXTS; do 
+    echo "you selected context : ${CONTEXT}"
+    MANAGEMENTCTX="${CONTEXT}"
+    exit
+done
+
+echo "Select workload cluster on which to install agent or CTRL-C to quit"
+select CONTEXT in $CONTEXTS; do 
+    echo "you selected context : ${CONTEXT}"
+    CLUSTERCTX="${CONTEXT}"
+    exit
+done
+
+kubectl config use-context $CLUSTERCTX
+
 export CLUSTER_NAME=$(kubectl get cm kubeadm-config -n kube-system -o yaml | yq e '.data.ClusterConfiguration' | yq e '.clusterName')
 export CLUSTER_UUID=$(kubectl get ns kube-system -o json |jq -r '.metadata.uid') 
 
@@ -66,5 +84,6 @@ cp $k8sdir/chart/values.yaml $k8sdir/chart/$CLUSTER_NAME-values.yaml
 CHARTVALUES=$(yq e '.k8sDistribution |="NKP"' $k8sdir/chart/$CLUSTER_NAME-values.yaml)
 CHARTVALUES=$(echo "$CHARTVALUES" | CLUSTER_NAME=$CLUSTER_NAME yq e '.k8sClusterName |=env(CLUSTER_NAME)' )
 CHARTVALUES=$(echo "$CHARTVALUES" | CLUSTER_UUID=$CLUSTER_UUID yq e '.k8sClusterUUID |=env(CLUSTER_UUID)' )
+
 echo "$CHARTVALUES" |yq e
 
