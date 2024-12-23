@@ -63,3 +63,8 @@ if [ $? -ne 0 ]; then
 fi
 
 cp $k8sdir/chart/values.yaml $k8sdir/chart/$CLUSTER_NAME-values.yaml 
+CHARTVALUES=$(yq e '.k8sDistribution |="NKP"' $k8sdir/chart/$CLUSTER_NAME-values.yaml)
+CHARTVALUES=$(echo "$CHARTVALUES" | CLUSTER_NAME=$CLUSTER_NAME yq e '.k8sClusterName |=env(CLUSTER_NAME)' )
+CHARTVALUES=$(echo "$CHARTVALUES" | CLUSTER_UUID=$CLUSTER_UUID yq e '.k8sClusterUUID |=env(CLUSTER_UUID)' )
+echo "$CHARTVALUES" |yq e
+
