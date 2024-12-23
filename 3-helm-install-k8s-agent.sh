@@ -29,12 +29,14 @@ echo "Select management cluster context or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected management context : ${CONTEXT}"
     MANAGEMENTCTX="${CONTEXT}"
+    break
 done
 
 echo "Select workload cluster on which to install agent or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     CLUSTERCTX="${CONTEXT}"
+    break
 done
 
 kubectl config use-context $CLUSTERCTX
