@@ -56,3 +56,5 @@ if [ $? -ne 0 ]; then
     echo "docker image push error. Exiting."
     exit 1
 fi
+
+echo "$registry/$registryrepo/k8s-agent:$agenttag" > ndkimagerepo

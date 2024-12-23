@@ -30,7 +30,35 @@ echo "about to install nutanix k8s agent on cluster : $CLUSTER_NAME - cluster UI
 echo "press enter to confirm or CTRL-C to cancel"
 read
 
-if [ $? -ne 0 ]; then
-    echo "script error. Exiting."
+echo "checking k8s agent"
+k8sdir=$(ls -d k8s*)
+# Check if directory is empty
+if [[ ! -d "$k8sdir" ]]; then
+    echo "No k8s agent directory. Exiting."
     exit 1
 fi
+
+echo "getting k8s agent chart version"
+ChartName=$(yq e '.name' $k8sdir/chart/Chart.yaml)
+if [ $? -ne 0 ]; then
+    echo "Error getting chart name. Exiting."
+    exit 1
+fi
+
+ChartVersion=$(yq e '.version' $k8sdir/chart/Chart.yaml)
+if [ $? -ne 0 ]; then
+    echo "Error getting chart version. Exiting."
+    exit 1
+fi
+
+ReleaseName="$ChartName-$ChartVersion"
+echo
+echo "Helm chart : $ReleaseName"
+echo
+
+kubectl get ns ntnx-system
+if [ $? -ne 0 ]; then
+    echo "Namespace ntnx-system not present on cluster. Exiting."
+    exit 1
+fi
+
