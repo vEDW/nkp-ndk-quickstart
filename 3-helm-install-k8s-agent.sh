@@ -27,16 +27,14 @@ CONTEXTS=$(kubectl config get-contexts  --no-headers=true | awk '{print $2}')
 
 echo "Select management cluster context or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
-    echo "you selected context : ${CONTEXT}"
+    echo "you selected management context : ${CONTEXT}"
     MANAGEMENTCTX="${CONTEXT}"
-    exit
 done
 
 echo "Select workload cluster on which to install agent or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
-    echo "you selected context : ${CONTEXT}"
+    echo "you selected cluster context : ${CONTEXT}"
     CLUSTERCTX="${CONTEXT}"
-    exit
 done
 
 kubectl config use-context $CLUSTERCTX
