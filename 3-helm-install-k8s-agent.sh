@@ -62,3 +62,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+cp $k8sdir/chart/values.yaml $k8sdir/chart/$CLUSTER_NAME-values.yaml 
