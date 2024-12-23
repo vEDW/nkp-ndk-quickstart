@@ -23,36 +23,14 @@
 
 #------------------------------------------------------------------------------
 
+export CLUSTER_NAME=$(k get cm kubeadm-config -n kube-system -o yaml | yq e '.data.ClusterConfiguration' | yq e '.clusterName')
+export CLUSTER_UUID=$(kubectl get ns kube-system -o json | | jq -r '.metadata.uid') 
 
-# Prompt the user for the registry server name
-echo
-read -p "Enter private registry (no https prefix): " registry < /dev/tty
-echo
-read -p "Enter private registry repository: " registryrepo < /dev/tty
-echo
-read -p "Enter private registry username : " registryuser < /dev/tty
-echo
-read -sp "Enter private registry password: " registrypasswd < /dev/tty
-echo
-
-echo $registrypasswd | docker login $registry --username $registryuser --password-stdin
+echo "about to install nutanix k8s agent on cluster : $CLUSTER_NAME - cluster UID : $CLUSTER_UUID"
+echo "press enter to confirm or CTRL-C to cancel"
+pause
 
 if [ $? -ne 0 ]; then
-    echo "docker login failed. Exiting."
-    exit 1
-fi
-
-agentjson=$(docker images -f reference=k8s-agent --format json | jq .)
-if [ $? -ne 0 ]; then
-    echo "docker image not loaded. Exiting."
-    exit 1
-fi
-agenttag=$(docker images -f reference=k8s-agent --format json | jq -r '.Tag')
-
-docker image tag k8s-agent:$agenttag  $registry/$registryrepo/k8s-agent:$agenttag
-docker push $registry/$registryrepo/k8s-agent:$agenttag
-
-if [ $? -ne 0 ]; then
-    echo "docker image push error. Exiting."
+    echo "script error. Exiting."
     exit 1
 fi
