@@ -43,3 +43,6 @@ if [ $? -ne 0 ]; then
     echo "docker image ($k8sagenttar) load. Exiting."
     exit 1
 fi
+
+docker images -f reference=k8s-agent
+echo
