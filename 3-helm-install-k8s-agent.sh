@@ -28,7 +28,7 @@ export CLUSTER_UUID=$(kubectl get ns kube-system -o json |jq -r '.metadata.uid')
 
 echo "about to install nutanix k8s agent on cluster : $CLUSTER_NAME - cluster UID : $CLUSTER_UUID"
 echo "press enter to confirm or CTRL-C to cancel"
-pause
+read
 
 if [ $? -ne 0 ]; then
     echo "script error. Exiting."
