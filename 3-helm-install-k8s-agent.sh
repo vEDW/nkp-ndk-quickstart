@@ -23,8 +23,8 @@
 
 #------------------------------------------------------------------------------
 
-export CLUSTER_NAME=$(k get cm kubeadm-config -n kube-system -o yaml | yq e '.data.ClusterConfiguration' | yq e '.clusterName')
-export CLUSTER_UUID=$(kubectl get ns kube-system -o json | | jq -r '.metadata.uid') 
+export CLUSTER_NAME=$(kubectl get cm kubeadm-config -n kube-system -o yaml | yq e '.data.ClusterConfiguration' | yq e '.clusterName')
+export CLUSTER_UUID=$(kubectl get ns kube-system -o json |jq -r '.metadata.uid') 
 
 echo "about to install nutanix k8s agent on cluster : $CLUSTER_NAME - cluster UID : $CLUSTER_UUID"
 echo "press enter to confirm or CTRL-C to cancel"
