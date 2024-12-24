@@ -95,7 +95,6 @@ IMAGEREGISTRY=$(echo $NDKIMGREPO |awk -F '/' '{print $1}' )
 IMAGEREPO=$(echo $NDKIMGREPO |awk -F '/' '{print $2}' )
 IMAGEFULL=$(echo $NDKIMGREPO |awk -F '/' '{print $3}')
 IMAGE=$(echo $IMAGEFULL |awk -F ':' '{print $1}')
-IMAGETAG=$(echo $IMAGEFULL |awk -F ':' '{print $2}')
 
 #Create helm value file
 cp $k8sdir/chart/values.yaml $k8sdir/chart/$CLUSTER_NAME-values.yaml 

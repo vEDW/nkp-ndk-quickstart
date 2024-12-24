@@ -47,9 +47,11 @@ if [ $? -ne 0 ]; then
     echo "docker image not loaded. Exiting."
     exit 1
 fi
-agenttag=$(docker images -f reference=k8s-agent --format json | jq -r '.Tag')
+originalagenttag=$(docker images -f reference=k8s-agent --format json | jq -r '.Tag')
+#Helm chart want integer only.
+agenttag=$(echo $originalagenttag|rev|awk -F "." '{print $1}'|rev)
 
-docker image tag k8s-agent:$agenttag  $registry/$registryrepo/k8s-agent:$agenttag
+docker image tag k8s-agent:$originalagenttag  $registry/$registryrepo/k8s-agent:$agenttag
 docker push $registry/$registryrepo/k8s-agent:$agenttag
 
 if [ $? -ne 0 ]; then
