@@ -32,10 +32,11 @@ fi
 
 #Get cluster context
 CONTEXTS=$(kubectl config get-contexts  --no-headers=true |awk '{print $2}')
-
+echo
 echo "Select workload cluster on which to install agent or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
+    echo 
     CLUSTERCTX="${CONTEXT}"
     break
 done
@@ -44,7 +45,7 @@ kubectl config use-context $CLUSTERCTX
 
 export CLUSTER_NAME=$(kubectl get cm kubeadm-config -n kube-system -o yaml |yq e '.data.ClusterConfiguration' |yq e '.clusterName')
 export CLUSTER_UUID=$(kubectl get ns kube-system -o json |jq -r '.metadata.uid') 
-
+echo
 echo "about to install nutanix k8s agent on cluster : $CLUSTER_NAME - cluster UID : $CLUSTER_UUID"
 echo "press enter to confirm or CTRL-C to cancel"
 read
@@ -75,7 +76,8 @@ echo
 echo "Helm chart : $ReleaseName"
 echo
 
-kubectl get ns ntnx-system
+#Checking ntnx-system ns presence
+kubectl get ns ntnx-system 
 if [ $? -ne 0 ]; then
     echo "Namespace ntnx-system not present on cluster. Exiting."
     exit 1
@@ -107,7 +109,7 @@ CHARTVALUES=$(echo "$CHARTVALUES" |IMAGE=$IMAGE yq e '.agent.image.name |=env(IM
 CHARTVALUES=$(echo "$CHARTVALUES" |IMAGETAG=$IMAGETAG yq e '.agent.image.tag |=env(IMAGETAG)' )
 CHARTVALUES=$(echo "$CHARTVALUES" |REPOSITORY="$IMAGEREGISTRY/$IMAGEREPO" yq e '.agent.image.repository |=env(REPOSITORY)' )
 CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.agent.image.privateRegistry |=false' )
-CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.agent.image.imageCredentials.dockerconfig |=' )
+CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.agent.image.imageCredentials.dockerconfig |=""' )
 
 #PC info
 CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.pc.insecure |=true' )
