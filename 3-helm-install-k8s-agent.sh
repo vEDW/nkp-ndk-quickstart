@@ -23,14 +23,15 @@
 
 #------------------------------------------------------------------------------
 
-CONTEXTS=$(kubectl config get-contexts  --no-headers=true | awk '{print $2}')
 
-echo "Select management cluster context or CTRL-C to quit"
-select CONTEXT in $CONTEXTS; do 
-    echo "you selected management context : ${CONTEXT}"
-    MANAGEMENTCTX="${CONTEXT}"
-    break
-done
+#check if ndkimagerepo file present 
+if [[ ! -e "./ndkimagerepo" ]]; then
+    echo "ndkimagerepo file not present. please 2-push-k8s-agent.sh first. exiting."
+    exit 1
+fi
+
+#Get cluster context
+CONTEXTS=$(kubectl config get-contexts  --no-headers=true |awk '{print $2}')
 
 echo "Select workload cluster on which to install agent or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
@@ -41,7 +42,7 @@ done
 
 kubectl config use-context $CLUSTERCTX
 
-export CLUSTER_NAME=$(kubectl get cm kubeadm-config -n kube-system -o yaml | yq e '.data.ClusterConfiguration' | yq e '.clusterName')
+export CLUSTER_NAME=$(kubectl get cm kubeadm-config -n kube-system -o yaml |yq e '.data.ClusterConfiguration' |yq e '.clusterName')
 export CLUSTER_UUID=$(kubectl get ns kube-system -o json |jq -r '.metadata.uid') 
 
 echo "about to install nutanix k8s agent on cluster : $CLUSTER_NAME - cluster UID : $CLUSTER_UUID"
@@ -80,10 +81,45 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-cp $k8sdir/chart/values.yaml $k8sdir/chart/$CLUSTER_NAME-values.yaml 
-CHARTVALUES=$(yq e '.k8sDistribution |="NKP"' $k8sdir/chart/$CLUSTER_NAME-values.yaml)
-CHARTVALUES=$(echo "$CHARTVALUES" | CLUSTER_NAME=$CLUSTER_NAME yq e '.k8sClusterName |=env(CLUSTER_NAME)' )
-CHARTVALUES=$(echo "$CHARTVALUES" | CLUSTER_UUID=$CLUSTER_UUID yq e '.k8sClusterUUID |=env(CLUSTER_UUID)' )
+#Getting Nutanix PC creds for agent
+CSICREDS=$(kubectl get secret nutanix-csi-credentials -n ntnx-system -o yaml |yq e '.data.key' |base64 -d)
+CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
+CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
+CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
 
-echo "$CHARTVALUES" |yq e
+#Getting Nutanix PC creds for agent
+NDKIMGREPO=$(cat "./ndkimagerepo")
+IMAGEREGISTRY=$(echo $NDKIMGREPO |awk -F '/' '{print $1}' )
+IMAGEREPO=$(echo $NDKIMGREPO |awk -F '/' '{print $2}' )
+IMAGEFULL=$(echo $NDKIMGREPO |awk -F '/' '{print $3}')
+IMAGE=$(echo $IMAGEFULL |awk -F ':' '{print $1}')
+IMAGETAG=$(echo $IMAGEFULL |awk -F ':' '{print $2}')
+
+#Create helm value file
+cp $k8sdir/chart/values.yaml $k8sdir/chart/$CLUSTER_NAME-values.yaml 
+#Cluster info
+CHARTVALUES=$(yq e '.k8sDistribution |="NKP"' $k8sdir/chart/$CLUSTER_NAME-values.yaml)
+CHARTVALUES=$(echo "$CHARTVALUES" |CLUSTER_NAME=$CLUSTER_NAME yq e '.k8sClusterName |=env(CLUSTER_NAME)' )
+CHARTVALUES=$(echo "$CHARTVALUES" |CLUSTER_UUID=$CLUSTER_UUID yq e '.k8sClusterUUID |=env(CLUSTER_UUID)' )
+
+#image info
+CHARTVALUES=$(echo "$CHARTVALUES" |IMAGE=$IMAGE yq e '.agent.image.name |=env(IMAGE)' )
+CHARTVALUES=$(echo "$CHARTVALUES" |IMAGETAG=$IMAGETAG yq e '.agent.image.tag |=env(IMAGETAG)' )
+CHARTVALUES=$(echo "$CHARTVALUES" |REPOSITORY="$IMAGEREGISTRY/$IMAGEREPO" yq e '.agent.image.repository |=env(REPOSITORY)' )
+CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.agent.image.privateRegistry |=false' )
+CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.agent.image.imageCredentials.dockerconfig |=' )
+
+#PC info
+CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.pc.insecure |=true' )
+CHARTVALUES=$(echo "$CHARTVALUES" |CSIPC=$CSIPC yq e '.pc.endpoint |=env(CSIPC)' )
+CHARTVALUES=$(echo "$CHARTVALUES" |CSIUSER=$CSIUSER yq e '.pc.username |=env(CSIUSER)' )
+CHARTVALUES=$(echo "$CHARTVALUES" |CSIPASSWD=$CSIPASSWD yq e '.pc.password |=env(CSIPASSWD)' )
+
+#Save value file
+echo "$CHARTVALUES" |yq e > $k8sdir/chart/$CLUSTER_NAME-values.yaml 
+yq e $k8sdir/chart/$CLUSTER_NAME-values.yaml 
+if [ $? -ne 0 ]; then
+    echo "value yaml file error. Exiting."
+    exit 1
+fi
 
