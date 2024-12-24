@@ -125,4 +125,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-helm install -n ntnx-system -f $k8sdir/chart/$CLUSTER_NAME-values.yaml  nutanix-agent/$k8sdir/chart
+helm install nutanix-k8s-agent $k8sdir/chart  -n ntnx-system -f $k8sdir/chart/$CLUSTER_NAME-values.yaml 
