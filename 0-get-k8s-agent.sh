@@ -51,4 +51,4 @@ fi
 rm -f k8sagent.tar
 
 # Success message
-echo "NDK k8s agent downloaded successfully!"
+echo "Nutanix k8s agent downloaded successfully!"
