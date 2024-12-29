@@ -53,20 +53,18 @@ done
 APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
 APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
 
-ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: Application
-metadata:
-  name: $APPNAME
-  namespace: $NS
-spec:
-  applicationSelector:
-    resourceLabelSelectors:
-      - labelSelector:
-        matchLabels:
-          app: $APPNAME
-        includeResources:
-          - group: ""
-            kind: PersistentVolumeClaim"
+SNAPDATE=$(date '+%Y-%m-%d-%Hh%M')
 
-echo "$ApplicationCR" | yq e > applicationcr-$APPNAME.yaml
-echo "applicationcr-$APPNAME.yaml created"
+ApplicationSnapshotYAML="apiVersion: dataservices.nutanix.com/v1alpha1
+kind: ApplicationSnapshot
+metadata:
+  name: $APPNAME-$SNAPDATE
+  namespace: $APPNS
+spec:
+  source:
+    applicationRef:
+      name: $APPNAME 
+  expiresAfter: 60m"
+
+echo "$ApplicationSnapshotYAML" | yq e > appsnapshot-$APPNAME.yaml
+kubectl apply -f appsnapshot-$APPNAME.yaml
