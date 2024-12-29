@@ -36,10 +36,12 @@ if [ $? -ne 0 ]; then
 fi
 
 CSICREDS=$(kubectl get secret nutanix-csi-credentials -n ntnx-system -o yaml |yq e '.data.key' |base64 -d)
+CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
 CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
 CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
 export PCADMIN=$CSIUSER
 export PCPASSWD=$CSIPASSWD
+export PCIPADDRESS=$CSIPC
 
 source ../pc-restapi/prism-rest-api.sh
 echo "getting aos clusters"
