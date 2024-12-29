@@ -23,27 +23,46 @@
 
 #------------------------------------------------------------------------------
 
-echo "checking NDK"
-ndkdir=$(ls -d ndk-*)
-# Check if directory is empty
-if [[ ! -d "$ndkdir" ]]; then
-    echo "No ndk directory. Exiting."
-    exit 1
-fi
 
-echo "loading ndk in docker images"
-ndktar=$(ls $ndkdir/ndk-*tar)
-if [[ ! -e "$ndktar" ]]; then
-    echo "No ndk tar found. Exiting."
-    exit 1
-fi
-
-docker image load -i $ndktar
-if [ $? -ne 0 ]; then
-    echo "docker image ($ndktar) load. Exiting."
-    exit 1
-fi
-
-#docker images -f reference=ndk
-docker images |grep ndk 
+# Prompt the user for the registry server name
 echo
+read -p "Enter private registry (no https prefix): " registry < /dev/tty
+echo
+read -p "Enter private registry repository: " registryrepo < /dev/tty
+echo
+read -p "Enter private registry username : " registryuser < /dev/tty
+echo
+read -sp "Enter private registry password: " registrypasswd < /dev/tty
+echo
+
+echo $registrypasswd | docker login $registry --username $registryuser --password-stdin
+
+if [ $? -ne 0 ]; then
+    echo "docker login failed. Exiting."
+    exit 1
+fi
+
+IMAGES=$(docker images |grep ndk | grep -v $registry |awk '{print $1}')
+echo "" > ndkimagerepo
+for IMAGE in $IMAGES;
+do
+    echo "$IMAGE"
+    imagejson=$(docker images -f reference="$IMAGE" --format json | jq .)
+    if [ $? -ne 0 ]; then
+        echo "docker image $IMAGE not loaded. Exiting."
+        exit 1
+    fi
+    originalagenttag=$(echo $imagejson | jq -r '.Tag')
+
+    docker image tag $IMAGE:$originalagenttag  $registry/$registryrepo/$IMAGE:$originalagenttag
+    docker push $registry/$registryrepo/$IMAGE:$originalagenttag
+    if [ $? -ne 0 ]; then
+        echo "docker image push error. Exiting."
+        exit 1
+    fi
+
+    echo "$registry/$registryrepo/$IMAGE:$originalagenttag" >> ndkimagerepo
+done
+
+echo 
+echo "done pushing agents"
