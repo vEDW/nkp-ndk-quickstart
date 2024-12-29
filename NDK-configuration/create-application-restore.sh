@@ -50,22 +50,51 @@ select APP in $APPS; do
     APPNAME="${APP}"
     break
 done
-APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
-APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
 
-SNAPDATE=$(date '+%Y-%m-%d-%Hh%M')
+SNAPSHOTS=$(kubectl get as -n default -o yaml |APPNAME=$APPNAME yq e '.items[] |select(.spec.source.applicationRef.name="env(APPNAME)")|.metadata.name')
+select SNAP in $SNAPSHOTS; do 
+    echo "you selected application snapshot : ${SNAP}"
+    echo 
+    SNAPNAME="${SNAP}"
+    break
+done
+PVCs=$(kubectl get deploy  -n $APPNS $APPNAME -o yaml |yq e '.spec.template.spec.volumes[].persistentVolumeClaim.claimName')
 
-ApplicationSnapshotYAML="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: ApplicationSnapshot
+echo 
+echo "Ready to proceed to snapshot restore for application : $APPNAME"
+echo "This will delete current application deployment"
+echo "and related PVCs : $PVCS"
+echo "press enter to proceed or CTRL-C to cancel"
+read -s "press enter to proceed or CTRL-C to cancel" 
+
+
+kubectl delete deployment -n $APPNS $APPNAME
+if [ $? -ne 0 ]; then
+    echo "application deletion failed. Exiting."
+    exit 1
+fi
+
+for PVC in $PVCs;
+do
+  echo "deleting PVC : $PVC"
+  kubectl delete pvc -n $APPNS $PVC
+  if [ $? -ne 0 ]; then
+    echo "PVC $PVC deletion failed."
+  fi
+done
+
+echo
+echo "Application and PVC(s) deleted. Proceeding to snapshot restore"
+echo
+
+SNAPRESTOREYAML="apiVersion: dataservices.nutanix.com/v1alpha1
+kind: ApplicationSnapshotRestore
 metadata:
-  name: $APPNAME-$SNAPDATE
+  name: restore-$appname-$SNAPNAME
   namespace: $APPNS
 spec:
-  source:
-    applicationRef:
-      name: $APPNAME 
-  expiresAfter: 60m"
+  applicationSnapshotName: $SNAPNAME"
 
-echo "$ApplicationSnapshotYAML" | yq e > appsnapshot-$APPNAME.yaml
-kubectl apply -f appsnapshot-$APPNAME.yaml
-kubectl get as -n $APPNS
+echo "$SNAPRESTOREYAML" | yq e > restore-$appname-$SNAPNAME.yaml
+kubectl apply -f restore-$appname-$SNAPNAME.yaml
+kubectl get -n $APPNS deploy,pvc,pod,svc
