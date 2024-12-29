@@ -51,7 +51,7 @@ echo "press enter to confirm or CTRL-C to cancel"
 read
 
 echo "checking NDK "
-k8sdir=$(ls -d ndk*)
+k8sdir=$(ls -d ndk-*)
 # Check if directory is empty
 if [[ ! -d "$k8sdir" ]]; then
     echo "No k8s agent directory. Exiting."
