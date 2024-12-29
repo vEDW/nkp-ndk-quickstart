@@ -45,7 +45,7 @@ export PCIPADDRESS=$CSIPC
 
 source ../pc-restapi/prism-rest-api.sh
 echo echo "getting aos clusters"
-PENAME=$(get_aos_clusters_name)
+PENAME=$(get_aos_clusters_name | tr '[:upper:]' '[:lower:]') 
 echo $PENAME
 echo
 PEUUID=$(get_aos_clusters_uuid)
