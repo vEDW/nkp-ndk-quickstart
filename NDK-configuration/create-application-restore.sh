@@ -88,11 +88,11 @@ echo
 SNAPRESTOREYAML="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ApplicationSnapshotRestore
 metadata:
-  name: restore-$appname-$SNAPNAME
+  name: restore-$APPNAME-$SNAPNAME
   namespace: $APPNS
 spec:
   applicationSnapshotName: $SNAPNAME"
 
-echo "$SNAPRESTOREYAML" | yq e > restore-$appname-$SNAPNAME.yaml
-kubectl apply -f restore-$appname-$SNAPNAME.yaml
+echo "$SNAPRESTOREYAML" | yq e > restore-$APPNAME-$SNAPNAME.yaml
+kubectl apply -f restore-$APPNAME-$SNAPNAME.yaml
 kubectl get -n $APPNS deploy,pvc,pod,svc
