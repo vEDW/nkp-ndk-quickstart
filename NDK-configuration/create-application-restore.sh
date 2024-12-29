@@ -64,9 +64,7 @@ echo
 echo "Ready to proceed to snapshot restore for application : $APPNAME"
 echo "This will delete current application deployment"
 echo "and related PVCs : $PVCS"
-echo "press enter to proceed or CTRL-C to cancel"
-read -s "press enter to proceed or CTRL-C to cancel" 
-
+read -p "press enter to proceed or CTRL-C to cancel" 
 
 kubectl delete deployment -n $APPNS $APPNAME
 if [ $? -ne 0 ]; then
