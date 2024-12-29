@@ -66,7 +66,7 @@ spec:
           - group: ""
             kind: PersistentVolumeClaim"
 
-ApplicationCR=$(echo $ApplicationCR |SELECTOR="$APPSELECTOR" yq e '.spec.applicationSelector.resourceLabelSelectors.labelSelector |=env(APPSELECTOR)')
+ApplicationCR=$(echo $ApplicationCR |APPSELECTOR="$APPSELECTOR" yq e '.spec.applicationSelector.resourceLabelSelectors.labelSelector |=env(APPSELECTOR)')
 
 
 echo "$ApplicationCR" | yq e > applicationcr-$APPNAME.yaml
