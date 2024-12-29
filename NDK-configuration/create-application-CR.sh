@@ -51,7 +51,7 @@ select APP in $APPS; do
     break
 done
 APPYAML=$(kubectl get deployment -n $APPNS -o yaml)
-APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector')
+APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
 
 ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: Application
@@ -62,11 +62,12 @@ spec:
   applicationSelector:
     resourceLabelSelectors:
       - labelSelector:
+            matchLabels:
         includeResources:
           - group: ""
             kind: PersistentVolumeClaim"
 
-ApplicationCR=$(echo $ApplicationCR |APPSELECTOR="$APPSELECTOR" yq e '.spec.applicationSelector.resourceLabelSelectors.labelSelector |=env(APPSELECTOR)')
+ApplicationCR=$(echo $ApplicationCR |APPSELECTOR="$APPSELECTOR" yq e '.spec.applicationSelector.resourceLabelSelectors.labelSelector.matchLabels |=env(APPSELECTOR)')
 
 
 echo "$ApplicationCR" | yq e > applicationcr-$APPNAME.yaml
