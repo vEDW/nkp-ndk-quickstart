@@ -81,12 +81,14 @@ call_curl(){
 
 get_clusters_v4() {
     RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.0.b2/config/clusters")
+    echo $RESPONSEJSON > clusters.json
     echo $RESPONSEJSON
+    
 }
 
 get_aos_clusters(){
     CLUSTERS=$(get_clusters_v4 '.data[]| select(.config.clusterFunction[] == "AOS")|.name,.extId')
-    echo 
+    echo $CLUSTERS
 }
 
 get_PC_clusters(){
