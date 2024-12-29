@@ -45,17 +45,26 @@ export PCIPADDRESS=$CSIPC
 
 source ../pc-restapi/prism-rest-api.sh
 echo echo "getting aos clusters"
-PECLUSTER=$(get_aos_clusters_name)
+PENAME=$(get_aos_clusters_name)
+echo $PENAME
+echo
+PEUUID=$(get_aos_clusters_uuid)
+echo $PEUUID
 echo
 echo "getting PC clusters"
-get_PC_clusters
+
+PCUUID=$(get_PC_clusters_uuid)
+echo $PCUUID
+echo
 
 SCS=$(kubectl get sc -A|grep nutanix |awk '{print $1}')
 
 StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: StorageCluster
 metadata:
- name: <storage-cluster-name>
+ name: $PENAME
 spec:
- storageServerUuid: <prism-element-uuid>
- managementServerUuid: <prism-central-uuid>"
+ storageServerUuid: $PEUUID
+ managementServerUuid: $PCUUID"
+
+echo $StorageCluster | yq e
