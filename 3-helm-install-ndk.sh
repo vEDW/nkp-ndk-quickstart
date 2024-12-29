@@ -24,9 +24,9 @@
 #------------------------------------------------------------------------------
 
 
-#check if agentimagerepo file present 
-if [[ ! -e "./agentimagerepo" ]]; then
-    echo "agentimagerepo file not present. please 2-push-k8s-agent.sh first. exiting."
+#check if ndkimagerepo file present 
+if [[ ! -e "./ndkimagerepo" ]]; then
+    echo "ndkimagerepo file not present. please 2-push-ndk.sh first. exiting."
     exit 1
 fi
 
@@ -46,19 +46,19 @@ kubectl config use-context $CLUSTERCTX
 export CLUSTER_NAME=$(kubectl get cm kubeadm-config -n kube-system -o yaml |yq e '.data.ClusterConfiguration' |yq e '.clusterName')
 export CLUSTER_UUID=$(kubectl get ns kube-system -o json |jq -r '.metadata.uid') 
 echo
-echo "about to install nutanix k8s agent on cluster : $CLUSTER_NAME - cluster UID : $CLUSTER_UUID"
+echo "about to install Nutanix Data Services for Kubernetes on cluster : $CLUSTER_NAME - cluster UID : $CLUSTER_UUID"
 echo "press enter to confirm or CTRL-C to cancel"
 read
 
-echo "checking k8s agent"
-k8sdir=$(ls -d k8s*)
+echo "checking NDK "
+k8sdir=$(ls -d ndk*)
 # Check if directory is empty
 if [[ ! -d "$k8sdir" ]]; then
     echo "No k8s agent directory. Exiting."
     exit 1
 fi
 
-echo "getting k8s agent chart version"
+echo "getting ndk chart version"
 ChartName=$(yq e '.name' $k8sdir/chart/Chart.yaml)
 if [ $? -ne 0 ]; then
     echo "Error getting chart name. Exiting."
@@ -84,45 +84,38 @@ if [ $? -ne 0 ]; then
 fi
 
 #Getting Nutanix PC creds for agent
-CSICREDS=$(kubectl get secret nutanix-csi-credentials -n ntnx-system -o yaml |yq e '.data.key' |base64 -d)
-CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
-CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
-CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
+NDKIMGREPO=$(cat "./ndkimagerepo")
 
-#Getting Nutanix PC creds for agent
-NDKIMGREPO=$(cat "./agentimagerepo")
-IMAGEREGISTRY=$(echo $NDKIMGREPO |awk -F '/' '{print $1}' )
-IMAGEREPO=$(echo $NDKIMGREPO |awk -F '/' '{print $2}' )
-IMAGEFULL=$(echo $NDKIMGREPO |awk -F '/' '{print $3}')
-IMAGE=$(echo $IMAGEFULL |awk -F ':' '{print $1}')
-IMAGETAG=$(echo $IMAGEFULL |awk -F ':' '{print $2}')
+#ndk manager
+MGRREPO=$(echo "$NDKIMGREPO"  |grep /manager |awk -F ':' '{print $1}' )
+MGRTAG=$(echo "$NDKIMGREPO"  |grep /manager |awk -F ':' '{print $2}')
 
-#Create helm value file
-cp $k8sdir/chart/values.yaml $k8sdir/chart/$CLUSTER_NAME-values.yaml 
-#Cluster info
-CHARTVALUES=$(yq e '.k8sDistribution |="NKP"' $k8sdir/chart/$CLUSTER_NAME-values.yaml)
-CHARTVALUES=$(echo "$CHARTVALUES" |CLUSTER_NAME=$CLUSTER_NAME yq e '.k8sClusterName |=env(CLUSTER_NAME)' )
-CHARTVALUES=$(echo "$CHARTVALUES" |CLUSTER_UUID=$CLUSTER_UUID yq e '.k8sClusterUUID |=env(CLUSTER_UUID)' )
+#infra-manager
+INFRAMGRREPO=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $1}' )
+INFRAMGRTAG=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $2}')
 
-#image info
-CHARTVALUES=$(echo "$CHARTVALUES" |IMAGE=$IMAGE yq e '.agent.image.name |=env(IMAGE)' )
-CHARTVALUES=$(echo "$CHARTVALUES" |IMAGETAG=$IMAGETAG yq e '.agent.image.tag |=env(IMAGETAG)' )
-CHARTVALUES=$(echo "$CHARTVALUES" |REPOSITORY="$IMAGEREGISTRY/$IMAGEREPO" yq e '.agent.image.repository |=env(REPOSITORY)' )
-CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.agent.image.privateRegistry |=false' )
-CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.agent.image.imageCredentials.dockerconfig |=""' )
+#bitnami
+BITNAMIREPO=$(echo "$NDKIMGREPO"  |grep /bitnami |awk -F ':' '{print $1}' )
+BITNAMITAG=$(echo "$NDKIMGREPO"  |grep /bitnami |awk -F ':' '{print $2}')
 
-#PC info
-CHARTVALUES=$(echo "$CHARTVALUES" |yq e '.pc.insecure |=true' )
-CHARTVALUES=$(echo "$CHARTVALUES" |CSIPC=$CSIPC yq e '.pc.endpoint |=env(CSIPC)' )
-CHARTVALUES=$(echo "$CHARTVALUES" |CSIUSER=$CSIUSER yq e '.pc.username |=env(CSIUSER)' )
-CHARTVALUES=$(echo "$CHARTVALUES" |CSIPASSWD=$CSIPASSWD yq e '.pc.password |=env(CSIPASSWD)' )
+#job-scheduler
+JOBREPO=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $1}' )
+JOBTAG=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $2}')
 
-#Save value file
-echo "$CHARTVALUES" |yq e > $k8sdir/chart/$CLUSTER_NAME-values.yaml 
-yq e $k8sdir/chart/$CLUSTER_NAME-values.yaml 
-if [ $? -ne 0 ]; then
-    echo "value yaml file error. Exiting."
-    exit 1
-fi
+#kube-rbac-proxy
+KUBERBACREPO=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $1}' )
+KUBERBACTAG=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $2}')
 
-helm install nutanix-k8s-agent-1 $k8sdir/chart  -n ntnx-system -f $k8sdir/chart/$CLUSTER_NAME-values.yaml 
+helm install ndk -n ntnx-system  $k8sdir/chart \
+--setmanager.repository=$MGRREPO \
+--set manager.tag=$MGRTAG \
+--set infraManager.repository=$INFRAMGRREPO \
+--set infraManager.tag=$INFRAMGRTAG \
+--set kubeRbacProxy.repository=$KUBERBACREPO \ 
+--set kubeRbacProxy.tag=$KUBERBACTAG \
+--set bitnamiKubectl.repository=$BITNAMIREPO \ 
+--set bitnamiKubectl.tag=$BITNAMITAG \
+--set jobScheduler.repository=$JOBREPO \
+--set jobScheduler.tag=$JOBTAG \
+--set tls.server.clusterName=$CLUSTER_NAME \
+--set config.secret.name=nutanix-csi-credentials 

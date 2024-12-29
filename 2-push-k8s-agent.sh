@@ -59,4 +59,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "$registry/$registryrepo/k8s-agent:$agenttag" > ndkimagerepo
+echo "$registry/$registryrepo/k8s-agent:$agenttag" > agentimagerepo
