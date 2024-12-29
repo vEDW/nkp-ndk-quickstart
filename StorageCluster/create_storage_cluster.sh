@@ -67,6 +67,5 @@ spec:
  storageServerUuid: $PEUUID
  managementServerUuid: $PCUUID"
 
-echo "$StorageCluster"
-echo
-echo "$StorageCluster" | yq e
+echo "$StorageCluster" | yq e > storagecluster-$PENAME.yaml
+echo "storagecluster-$PENAME.yaml created"
