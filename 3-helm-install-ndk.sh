@@ -33,7 +33,7 @@ fi
 #Get cluster context
 CONTEXTS=$(kubectl config get-contexts  --no-headers=true |awk '{print $2}')
 echo
-echo "Select workload cluster on which to install agent or CTRL-C to quit"
+echo "Select workload cluster on which to install ndk or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
