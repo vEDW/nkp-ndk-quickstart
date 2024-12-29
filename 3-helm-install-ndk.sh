@@ -107,7 +107,7 @@ KUBERBACREPO=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $1
 KUBERBACTAG=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $2}')
 
 helm install ndk -n ntnx-system  $k8sdir/chart \
---setmanager.repository=$MGRREPO \
+--set manager.repository=$MGRREPO \
 --set manager.tag=$MGRTAG \
 --set infraManager.repository=$INFRAMGRREPO \
 --set infraManager.tag=$INFRAMGRTAG \
