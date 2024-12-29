@@ -88,14 +88,23 @@ CSICREDS=$(kubectl get secret nutanix-csi-credentials -n ntnx-system -o yaml |yq
 CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
 CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
 CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
+NDKSECRET=nutanix-csi-credentials
 if  [ $CSIUSER != "admin" ]; then
-    echo "nutanix-csi-credentials user is not 'admin'. Exiting."
+    echo "nutanix-csi-credentials user is not 'admin'."
     echo
-    exit 1
+    
+    echo "provide admin password for ndk secret creation or press CTRL-C to cancel"
+    read -sp "admin password: " adminpasswd < /dev/tty
 
-    # kubectl create secret generic ndk-credentials -n ntnx-system --from-literal key="$CSIPC:$9440:admin:$CSIPASSWD"
+    if [ $adminpasswd != "" ]
+    then
+        kubectl create secret generic ndk-credentials -n ntnx-system --from-literal key="$CSIPC:$9440:admin:$adminpasswd"
+        NDKSECRET=ndk-credentials
+    else
+        echo "admin password is empty. exiting"
+        exit 1
+    fi
 fi
-
 
 #Getting Nutanix PC creds for agent
 NDKIMGREPO=$(cat "./ndkimagerepo")
@@ -132,4 +141,7 @@ helm install ndk -n ntnx-system  $k8sdir/chart \
 --set jobScheduler.repository=$JOBREPO \
 --set jobScheduler.tag=$JOBTAG \
 --set tls.server.clusterName=$CLUSTER_NAME \
---set config.secret.name=nutanix-csi-credentials 
+--set config.secret.name=$NDKSECRET 
+
+echo
+echo "NDK chart installed"
