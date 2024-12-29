@@ -111,9 +111,9 @@ helm install ndk -n ntnx-system  $k8sdir/chart \
 --set manager.tag=$MGRTAG \
 --set infraManager.repository=$INFRAMGRREPO \
 --set infraManager.tag=$INFRAMGRTAG \
---set kubeRbacProxy.repository=$KUBERBACREPO \ 
+--set kubeRbacProxy.repository=$KUBERBACREPO \
 --set kubeRbacProxy.tag=$KUBERBACTAG \
---set bitnamiKubectl.repository=$BITNAMIREPO \ 
+--set bitnamiKubectl.repository=$BITNAMIREPO \
 --set bitnamiKubectl.tag=$BITNAMITAG \
 --set jobScheduler.repository=$JOBREPO \
 --set jobScheduler.tag=$JOBTAG \
