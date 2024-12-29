@@ -35,7 +35,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-NSS=$(kubectl get ns |awk '{print $1}')
+NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
 select NS in $NSS; do 
     echo "you selected namespace : ${NS}"
     echo 
@@ -43,9 +43,9 @@ select NS in $NSS; do
     break
 done
 
-APPS=$(kubectl get deployments -n $APPNS |awk '{print $1}')
+APPS=$(kubectl get deployments -n $APPNS --no-headers=true |awk '{print $1}')
 select APP in $APPS; do 
-    echo "you selected application : ${NS}"
+    echo "you selected application : ${APP}"
     echo 
     APPNAME="${APP}"
     break
@@ -67,7 +67,7 @@ spec:
           - group: ""
             kind: PersistentVolumeClaim"
 
-ApplicationCR=$(echo $ApplicationCR |APPSELECTOR="$APPSELECTOR" yq e '.spec.applicationSelector.resourceLabelSelectors.labelSelector.matchLabels |=env(APPSELECTOR)')
+ApplicationCR=$(echo $ApplicationCR |APPSELECTOR="$APPSELECTOR" yq e '.spec.applicationSelector.resourceLabelSelectors.labelSelector.matchLabels +=env(APPSELECTOR)')
 
 
 echo "$ApplicationCR" | yq e > applicationcr-$APPNAME.yaml
