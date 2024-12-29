@@ -85,12 +85,17 @@ get_clusters_v4() {
     echo $RESPONSEJSON
 }
 
-get_aos_clusters(){
-    CLUSTERS=$(get_clusters_v4 |jq '.data[]| select(.config.clusterFunction[] == "AOS")|.name,.extId')
-    echo $CLUSTERS
+get_aos_clusters_name(){
+    CLUSTERNAME=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "AOS")|.name')
+    echo $CLUSTERNAME
 }
 
-get_PC_clusters(){
-    CLUSTERS=$(get_clusters_v4 |jq '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.name,.extId')
-    AOSCLUSTERS=$(echo "$CLUSTERS" | jq .)
+get_aos_clusters_uuid(){
+    CLUSTERUUID=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "AOS")|.extId')
+    echo $CLUSTERUUID
+}
+
+get_PC_clusters_uuid(){
+    PCUUID=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.extId')
+    echo $PCUUID
 }

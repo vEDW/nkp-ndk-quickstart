@@ -44,8 +44,9 @@ export PCPASSWD=$CSIPASSWD
 export PCIPADDRESS=$CSIPC
 
 source ../pc-restapi/prism-rest-api.sh
-echo "getting aos clusters"
-get_aos_clusters
+echo echo "getting aos clusters"
+PECLUSTER=$(get_aos_clusters_name)
+echo
 echo "getting PC clusters"
 get_PC_clusters
 
