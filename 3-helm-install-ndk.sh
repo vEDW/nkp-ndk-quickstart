@@ -98,7 +98,7 @@ if  [ $CSIUSER != "admin" ]; then
 
     if [ $adminpasswd != "" ]
     then
-        kubectl create secret generic ndk-credentials -n ntnx-system --from-literal key="$CSIPC:$9440:admin:$adminpasswd"
+        kubectl create secret generic ndk-credentials -n ntnx-system --from-literal key="$CSIPC:9440:admin:$adminpasswd"
         NDKSECRET=ndk-credentials
     else
         echo "admin password is empty. exiting"

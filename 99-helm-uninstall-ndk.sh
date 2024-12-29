@@ -55,3 +55,5 @@ if [ $? -ne 0 ]; then
     echo "helm uninstall error. Exiting."
     exit 1
 fi
+
+kubectl delete secret ndk-credentials -n ntnx-system 
