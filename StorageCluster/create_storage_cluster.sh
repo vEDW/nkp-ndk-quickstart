@@ -67,4 +67,6 @@ spec:
  storageServerUuid: $PEUUID
  managementServerUuid: $PCUUID"
 
+echo $StorageCluster
+echo
 echo $StorageCluster | yq e
