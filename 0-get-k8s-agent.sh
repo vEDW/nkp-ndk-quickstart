@@ -23,7 +23,10 @@
 
 #------------------------------------------------------------------------------
 
-
+#get download link:
+echo
+echo "open a browser to page : https://portal.nutanix.com/page/downloads?product=ndk"
+echo
 # Prompt the user for the download link
 read -p "Enter 'Kubernetes Agent' download link: " url < /dev/tty
 
