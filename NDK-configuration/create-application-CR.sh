@@ -62,13 +62,11 @@ spec:
   applicationSelector:
     resourceLabelSelectors:
       - labelSelector:
-            matchLabels:
+        matchLabels:
+          app: $APPNAME
         includeResources:
           - group: ""
             kind: PersistentVolumeClaim"
-
-ApplicationCR=$(echo $ApplicationCR |APPSELECTOR="$APPSELECTOR" yq e '.spec.applicationSelector.resourceLabelSelectors.labelSelector.matchLabels +=env(APPSELECTOR)')
-
 
 echo "$ApplicationCR" | yq e > applicationcr-$APPNAME.yaml
 echo "applicationcr-$APPNAME.yaml created"
