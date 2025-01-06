@@ -51,7 +51,7 @@ select APP in $APPS; do
     break
 done
 
-SNAPSHOTS=$(kubectl get as -n default -o yaml |APPNAME=$APPNAME yq e '.items[] |select(.spec.source.applicationRef.name="env(APPNAME)")|.metadata.name')
+SNAPSHOTS=$(kubectl get as -n $APPNS -o yaml |APPNAME=$APPNAME yq e '.items[] |select(.spec.source.applicationRef.name="env(APPNAME)")|.metadata.name')
 select SNAP in $SNAPSHOTS; do 
     echo "you selected application snapshot : ${SNAP}"
     echo 
@@ -66,7 +66,7 @@ echo "This will delete current application deployment"
 echo "and related PVCs : $PVCS"
 read -p "press enter to proceed or CTRL-C to cancel" 
 
-kubectl delete deployment -n $APPNS $APPNAME
+#kubectl delete deployment -n $APPNS $APPNAME
 if [ $? -ne 0 ]; then
     echo "application deletion failed. Exiting."
     exit 1
@@ -93,6 +93,7 @@ metadata:
 spec:
   applicationSnapshotName: $SNAPNAME"
 
-echo "$SNAPRESTOREYAML" | yq e > restore-$APPNAME-$SNAPNAME.yaml
-kubectl apply -f restore-$APPNAME-$SNAPNAME.yaml
-kubectl get -n $APPNS deploy,pvc,pod,svc
+YAMLFILE=restore-$APPNAME-$SNAPNAME.yaml
+echo "$SNAPRESTOREYAML" | yq e > $YAMLFILE
+kubectl apply -f $YAMLFILE
+kubectl get -n $APPNS deploy,pvc,pod,svc,pv
