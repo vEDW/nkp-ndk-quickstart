@@ -46,12 +46,12 @@ done
 ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: Application
 metadata:
-  name: $APPNAME
-  namespace: $NS
+  name: entire-ns-$APPNS
+  namespace: $APPNS
 spec:
   applicationSelector:
 "
 
-echo "$ApplicationCR" | yq e > applicationcr-$APPNAME.yaml
+echo "$ApplicationCR" | yq e > applicationcr-$APPNS.yaml
 echo "applicationcr-$APPNAME.yaml created"
-echo "to execute run : kubectl apply -f applicationcr-$APPNAME.yaml -n $APPNS"
+echo "to execute run : kubectl apply -f applicationcr-$APPNS.yaml"
