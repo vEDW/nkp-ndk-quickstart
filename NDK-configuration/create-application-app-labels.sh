@@ -64,9 +64,7 @@ spec:
       - labelSelector:
           matchLabels:
             app: $APPNAME
-        includeResources:
-          - group: ""
-            kind: PersistentVolumeClaim"
+"
 
 echo "$ApplicationCR" | yq e > applicationcr-$APPNAME.yaml
 echo "applicationcr-$APPNAME.yaml created"
