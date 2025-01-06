@@ -52,6 +52,7 @@ spec:
   applicationSelector:
 "
 
-echo "$ApplicationCR" | yq e > applicationcr-$APPNS.yaml
-echo "applicationcr-$APPNAME.yaml created"
-echo "to execute run : kubectl apply -f applicationcr-$APPNS.yaml"
+YAMLFILE=applicationcr-$APPNS.yaml
+echo "$ApplicationCR" | yq e > $YAMLFILE
+echo "$YAMLFILE created"
+echo "to execute run : kubectl apply -f $YAMLFILE"
