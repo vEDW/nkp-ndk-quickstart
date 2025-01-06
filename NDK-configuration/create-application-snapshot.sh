@@ -43,7 +43,7 @@ select NS in $NSS; do
     break
 done
 
-APPS=$(kubectl get deployments -n $APPNS --no-headers=true |awk '{print $1}')
+APPS=$(kubectl get application -n $APPNS --no-headers=true |awk '{print $1}')
 select APP in $APPS; do 
     echo "you selected application : ${APP}"
     echo 
