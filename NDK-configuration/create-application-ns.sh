@@ -50,6 +50,18 @@ metadata:
   namespace: $APPNS
 spec:
   applicationSelector:
+    resourceLabelSelectors:
+      - includeResources:
+        - group: ""
+          kind: PersistentVolumeClaim
+        - group: ""
+          kind: Deployment
+        - group: ""
+          kind: Secret          
+        - group: ""
+          kind: Service
+        - group: ""
+          kind: Service
 "
 
 YAMLFILE=applicationcr-$APPNS.yaml
