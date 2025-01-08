@@ -50,9 +50,6 @@ select APP in $APPS; do
     APPNAME="${APP}"
     break
 done
-APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
-APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
-
 SNAPDATE=$(date '+%Y-%m-%d-%Hh%M')
 
 ApplicationSnapshotYAML="apiVersion: dataservices.nutanix.com/v1alpha1
