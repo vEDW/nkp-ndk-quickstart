@@ -54,12 +54,10 @@ spec:
       - includeResources:
         - group: ""
           kind: PersistentVolumeClaim
-        - group: ""
+        - group: apps
           kind: Deployment
         - group: ""
           kind: Secret          
-        - group: ""
-          kind: Service
         - group: ""
           kind: Service
 "
