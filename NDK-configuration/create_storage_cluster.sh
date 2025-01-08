@@ -55,7 +55,7 @@ done
 
 echo $PENAME
 echo
-PEUUID=$(get_aos_clusters_uuid)
+PEUUID=$(get_aos_clusters_uuid $PENAME)
 echo $PEUUID
 echo
 echo "getting PC clusters"
