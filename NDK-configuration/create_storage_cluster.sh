@@ -45,7 +45,14 @@ export PCIPADDRESS=$CSIPC
 
 source ../pc-restapi/prism-rest-api.sh
 echo echo "getting aos clusters"
-PENAME=$(get_aos_clusters_name | tr '[:upper:]' '[:lower:]') 
+PENAMES=$(get_aos_clusters_name | tr '[:upper:]' '[:lower:]') 
+select PENAME in $PENAMES; do 
+    echo "you selected PE Cluster : ${PENAME}"
+    echo 
+    PENAME="${PENAME}"
+    break
+done
+
 echo $PENAME
 echo
 PEUUID=$(get_aos_clusters_uuid)
@@ -66,6 +73,8 @@ metadata:
 spec:
  storageServerUuid: $PEUUID
  managementServerUuid: $PCUUID"
+
+YAMLFILE=applicationcr-$PENAME.yaml
 
 echo "$StorageCluster" | yq e > storagecluster-$PENAME.yaml
 echo "storagecluster-$PENAME.yaml created"

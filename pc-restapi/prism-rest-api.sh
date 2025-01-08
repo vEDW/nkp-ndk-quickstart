@@ -91,7 +91,8 @@ get_aos_clusters_name(){
 }
 
 get_aos_clusters_uuid(){
-    CLUSTERUUID=$(get_clusters_v4 |jq '.data[]| select(.config.clusterFunction[] == "AOS")|.extId')
+    PENAME=$1
+    CLUSTERUUID=$(get_clusters_v4 |jq --arg PENAME $PENAME  '.data[]| select((.config.clusterFunction[] == "AOS") and (.name == $PENAME))|.extId')
     echo $CLUSTERUUID
 }
 
