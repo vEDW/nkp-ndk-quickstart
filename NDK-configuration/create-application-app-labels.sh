@@ -19,7 +19,7 @@
 #------------------------------------------------------------------------------
 
 
-CONTEXTS=$(kubectl config get-contexts  --no-headers=true |rev | awk '{print $4}' |rev)
+CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
 echo "Select workload cluster on which to install agent or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
