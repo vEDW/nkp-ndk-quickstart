@@ -85,7 +85,7 @@ spec:
  storageServerUuid: $PEUUID
  managementServerUuid: $PCUUID"
 
-YAMLFILE=applicationcr-$PENAMELOWERCASE.yaml
+YAMLFILE=storagecluster-$PENAMELOWERCASE.yaml
 
 echo "$StorageCluster" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
