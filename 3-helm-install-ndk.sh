@@ -31,7 +31,7 @@ if [[ ! -e "./ndkimagerepo" ]]; then
 fi
 
 #Get cluster context
-CONTEXTS=$(kubectl config get-contexts  --no-headers=true |awk '{print $2}')
+CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
 echo "Select workload cluster on which to install ndk or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
