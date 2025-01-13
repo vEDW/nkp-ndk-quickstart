@@ -89,3 +89,5 @@ YAMLFILE=applicationcr-$PENAME.yaml
 
 echo "$StorageCluster" | yq e > storagecluster-$PENAME.yaml
 echo "storagecluster-$PENAME.yaml created"
+echo 
+echo "run : kubectl apply -f storagecluster-$PENAMELOWERCASE.yaml to apply to cluster"
