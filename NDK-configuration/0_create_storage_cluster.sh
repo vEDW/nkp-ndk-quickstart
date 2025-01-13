@@ -85,9 +85,9 @@ spec:
  storageServerUuid: $PEUUID
  managementServerUuid: $PCUUID"
 
-YAMLFILE=applicationcr-$PENAME.yaml
+YAMLFILE=applicationcr-$PENAMELOWERCASE.yaml
 
-echo "$StorageCluster" | yq e > storagecluster-$PENAME.yaml
-echo "storagecluster-$PENAME.yaml created"
+echo "$StorageCluster" | yq e > $YAMLFILE
+echo "$YAMLFILE created"
 echo 
-echo "run : kubectl apply -f storagecluster-$PENAMELOWERCASE.yaml to apply to cluster"
+echo "run : kubectl apply -f $YAMLFILE to apply to cluster"
