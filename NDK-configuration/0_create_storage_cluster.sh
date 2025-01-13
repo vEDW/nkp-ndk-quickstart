@@ -45,23 +45,33 @@ export PCIPADDRESS=$CSIPC
 
 source ../pc-restapi/prism-rest-api.sh
 echo echo "getting aos clusters"
-#PENAMES=$(get_aos_clusters_name | tr '[:upper:]' '[:lower:]') 
 PENAMES=$(get_aos_clusters_name) 
 select PENAME in $PENAMES; do 
     echo "you selected PE Cluster : ${PENAME}"
     echo 
     PENAME="${PENAME}"
+    PENAMELOWERCASE=$(echo "${PENAME}"| tr '[:upper:]' '[:lower:]' )
     break
 done
 
 echo $PENAME
 echo
 PEUUID=$(get_aos_clusters_uuid $PENAME)
+if [ "$PEUUID" == "" ]; then
+    echo "getting PE $PENAME UUID error. Exiting."
+    exit 1
+fi
+
 echo $PEUUID
 echo
 echo "getting PC clusters"
 
 PCUUID=$(get_PC_clusters_uuid)
+if [ "$PCUUID" == "" ]; then
+    echo "getting PC UUID error. Exiting."
+    exit 1
+fi
+
 echo $PCUUID
 echo
 
@@ -70,7 +80,7 @@ SCS=$(kubectl get sc -A|grep nutanix |awk '{print $1}')
 StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: StorageCluster
 metadata:
- name: $PENAME
+ name: $PENAMELOWERCASE
 spec:
  storageServerUuid: $PEUUID
  managementServerUuid: $PCUUID"
