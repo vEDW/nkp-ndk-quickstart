@@ -45,7 +45,8 @@ export PCIPADDRESS=$CSIPC
 
 source ../pc-restapi/prism-rest-api.sh
 echo echo "getting aos clusters"
-PENAMES=$(get_aos_clusters_name | tr '[:upper:]' '[:lower:]') 
+#PENAMES=$(get_aos_clusters_name | tr '[:upper:]' '[:lower:]') 
+PENAMES=$(get_aos_clusters_name) 
 select PENAME in $PENAMES; do 
     echo "you selected PE Cluster : ${PENAME}"
     echo 
