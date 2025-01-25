@@ -66,5 +66,7 @@ spec:
             app: $APPNAME
 "
 
-echo "$ApplicationCR" | yq e > applicationcr-$APPNAME.yaml
-echo "applicationcr-$APPNAME.yaml created"
+YAMLFILE=applicationcr-$APPNAME.yaml
+echo "$ApplicationCR" | yq e > $YAMLFILE
+echo "$YAMLFILE created"
+echo "to execute run : kubectl apply -f $YAMLFILE"
