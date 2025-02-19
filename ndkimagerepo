@@ -1,0 +1,5 @@
+registry.nutanixdemo.com/ndk/ndk/manager:1.2.0
+registry.nutanixdemo.com/ndk/ndk/infra-manager:1.2.0
+registry.nutanixdemo.com/ndk/ndk/bitnami-kubectl:1.30.3
+registry.nutanixdemo.com/ndk/ndk/job-scheduler:1.2.0
+registry.nutanixdemo.com/ndk/ndk/kube-rbac-proxy:v0.17.0
