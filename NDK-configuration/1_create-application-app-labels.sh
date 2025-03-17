@@ -52,6 +52,8 @@ select APP in $APPS; do
 done
 APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
 APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
+echo "Application Selector : $APPSELECTOR"
+echo
 
 ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: Application
@@ -63,7 +65,7 @@ spec:
     resourceLabelSelectors:
       - labelSelector:
           matchLabels:
-            app: $APPSELECTOR
+            $APPSELECTOR
 "
 
 YAMLFILE=applicationcr-$APPNAME.yaml
