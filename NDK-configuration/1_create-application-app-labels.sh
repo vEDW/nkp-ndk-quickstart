@@ -63,7 +63,7 @@ spec:
     resourceLabelSelectors:
       - labelSelector:
           matchLabels:
-            app: $APPNAME
+            app: $APPSELECTOR
 "
 
 YAMLFILE=applicationcr-$APPNAME.yaml
