@@ -66,6 +66,9 @@ spec:
       - labelSelector:
           matchLabels:
             $APPSELECTOR
+      - excludeResources:
+          - group: "cilium.io"
+            kind: "CiliumEndpoint"
 "
 
 YAMLFILE=applicationcr-$APPNAME.yaml
