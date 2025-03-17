@@ -55,6 +55,11 @@ APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
 echo "Application Selector : $APPSELECTOR"
 echo
 
+echo
+echo "Application resources in namespace $APPNS with label $APPSELECTOR : "
+kubectl get all,pvc -n $APPNS -l $APPSELECTOR
+echo
+
 ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: Application
 metadata:
