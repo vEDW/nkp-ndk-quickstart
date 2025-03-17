@@ -57,7 +57,7 @@ echo
 
 echo
 echo "Application resources in namespace $APPNS with label $APPSELECTOR : "
-LABELS=echo $APPSELECTOR |sed 's/: /=/'
+LABELS=$(echo $APPSELECTOR |sed 's/: /=/')
 kubectl get all,pvc -n $APPNS -l $LABELS
 echo
 
