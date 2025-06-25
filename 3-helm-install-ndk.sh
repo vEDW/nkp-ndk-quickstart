@@ -89,22 +89,22 @@ CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
 CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
 CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
 NDKSECRET=nutanix-csi-credentials
-if  [ $CSIUSER != "admin" ]; then
-    echo "nutanix-csi-credentials user is not 'admin'."
-    echo
+# if  [ $CSIUSER != "admin" ]; then
+#     echo "nutanix-csi-credentials user is not 'admin'."
+#     echo
     
-    echo "provide admin password for ndk secret creation or press CTRL-C to cancel"
-    read -sp "admin password: " adminpasswd < /dev/tty
+#     echo "provide admin password for ndk secret creation or press CTRL-C to cancel"
+#     read -sp "admin password: " adminpasswd < /dev/tty
 
-    if [ $adminpasswd != "" ]
-    then
-        kubectl create secret generic ndk-credentials -n ntnx-system --from-literal key="$CSIPC:9440:admin:$adminpasswd"
-        NDKSECRET=ndk-credentials
-    else
-        echo "admin password is empty. exiting"
-        exit 1
-    fi
-fi
+#     if [ $adminpasswd != "" ]
+#     then
+#         kubectl create secret generic ndk-credentials -n ntnx-system --from-literal key="$CSIPC:9440:admin:$adminpasswd"
+#         NDKSECRET=ndk-credentials
+#     else
+#         echo "admin password is empty. exiting"
+#         exit 1
+#     fi
+# fi
 
 #Getting Nutanix PC creds for agent
 NDKIMGREPO=$(cat "./ndkimagerepo")
