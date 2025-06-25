@@ -117,9 +117,9 @@ MGRTAG=$(echo "$NDKIMGREPO"  |grep /manager |awk -F ':' '{print $2}')
 INFRAMGRREPO=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $1}' )
 INFRAMGRTAG=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $2}')
 
-#bitnami
-BITNAMIREPO=$(echo "$NDKIMGREPO"  |grep /bitnami |awk -F ':' '{print $1}' )
-BITNAMITAG=$(echo "$NDKIMGREPO"  |grep /bitnami |awk -F ':' '{print $2}')
+#KUBECTL
+KUBECTLREPO=$(echo "$NDKIMGREPO"  |grep /kubectl |awk -F ':' '{print $1}' )
+KUBECTLTAG=$(echo "$NDKIMGREPO"  |grep /kubectl |awk -F ':' '{print $2}')
 
 #job-scheduler
 JOBREPO=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $1}' )
@@ -139,8 +139,8 @@ echo "helm install ndk -n ntnx-system  $k8sdir/chart \
 --set infraManager.tag=$INFRAMGRTAG \
 --set kubeRbacProxy.repository=$KUBERBACREPO \
 --set kubeRbacProxy.tag=$KUBERBACTAG \
---set kubectl.repository=$BITNAMIREPO \
---set kubectl.tag=$BITNAMITAG \
+--set kubectl.repository=$KUBECTLREPO \
+--set kubectl.tag=$KUBECTLTAG \
 --set jobScheduler.repository=$JOBREPO \
 --set jobScheduler.tag=$JOBTAG \
 --set tls.server.clusterName=$CLUSTER_NAME \
@@ -154,8 +154,8 @@ helm install ndk -n ntnx-system  $k8sdir/chart \
 --set infraManager.tag=$INFRAMGRTAG \
 --set kubeRbacProxy.repository=$KUBERBACREPO \
 --set kubeRbacProxy.tag=$KUBERBACTAG \
---set kubectl.repository=$BITNAMIREPO \
---set kubectl.tag=$BITNAMITAG \
+--set kubectl.repository=$KUBECTLREPO \
+--set kubectl.tag=$KUBECTLTAG \
 --set jobScheduler.repository=$JOBREPO \
 --set jobScheduler.tag=$JOBTAG \
 --set tls.server.clusterName=$CLUSTER_NAME \
