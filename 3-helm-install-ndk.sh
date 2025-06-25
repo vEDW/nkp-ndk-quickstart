@@ -136,12 +136,17 @@ helm install ndk -n ntnx-system  $k8sdir/chart \
 --set infraManager.tag=$INFRAMGRTAG \
 --set kubeRbacProxy.repository=$KUBERBACREPO \
 --set kubeRbacProxy.tag=$KUBERBACTAG \
---set bitnamiKubectl.repository=$BITNAMIREPO \
---set bitnamiKubectl.tag=$BITNAMITAG \
+--set kubectl.repository=$BITNAMIREPO \
+--set kubectl.tag=$BITNAMITAG \
 --set jobScheduler.repository=$JOBREPO \
 --set jobScheduler.tag=$JOBTAG \
 --set tls.server.clusterName=$CLUSTER_NAME \
 --set config.secret.name=$NDKSECRET 
 
+#checking if helm install was successful
+if [ $? -ne 0 ]; then
+    echo "Helm install failed. Exiting."
+    exit 1
+fi  
 echo
 echo "NDK chart installed"
