@@ -129,6 +129,24 @@ JOBTAG=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $2}')
 KUBERBACREPO=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $1}' )
 KUBERBACTAG=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $2}')
 
+echo
+echo "running command:"
+
+echo "helm install ndk -n ntnx-system  $k8sdir/chart \
+--set manager.repository=$MGRREPO \
+--set manager.tag=$MGRTAG \
+--set infraManager.repository=$INFRAMGRREPO \
+--set infraManager.tag=$INFRAMGRTAG \
+--set kubeRbacProxy.repository=$KUBERBACREPO \
+--set kubeRbacProxy.tag=$KUBERBACTAG \
+--set kubectl.repository=$BITNAMIREPO \
+--set kubectl.tag=$BITNAMITAG \
+--set jobScheduler.repository=$JOBREPO \
+--set jobScheduler.tag=$JOBTAG \
+--set tls.server.clusterName=$CLUSTER_NAME \
+--set config.secret.name=$NDKSECRET "
+echo
+
 helm install ndk -n ntnx-system  $k8sdir/chart \
 --set manager.repository=$MGRREPO \
 --set manager.tag=$MGRTAG \
