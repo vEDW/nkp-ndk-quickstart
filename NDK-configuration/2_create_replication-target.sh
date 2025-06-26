@@ -20,7 +20,9 @@
 
 echo
 echo "This script helps create Replication Target CR"
-echo "You should have created a namespace where you plan to deploy your application into before using this script."
+echo "Before using this script, You should:"
+echo " - create a namespace where you plan to deploy your application into."
+echo " - create a namespace on the destination cluster."
 echo 
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
