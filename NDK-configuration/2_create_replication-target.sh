@@ -97,6 +97,7 @@ done
 # add verification that NDK intercom is running on this cluster ? 
 
 #Create ReplicationTarget CR
+kubectl config use-context $PRIMARYCLUSTERCTX
 
 StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ReplicationTarget
