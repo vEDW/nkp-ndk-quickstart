@@ -67,14 +67,14 @@ kubectl config use-context $PRIMARYCLUSTERCTX
 StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: Remote
 metadata:
-  name: $PRIMARYNAME-Remote-Name
+  name: $PRIMARYNAME-remote
 spec:
   ndkServiceIp: $REMOTELBIP
   ndkServicePort: 2021
   tlsConfig:
     skipTLSVerify: true"
 
-YAMLFILE=ndk-$PRIMARYNAME-Remote-Name.yaml
+YAMLFILE=ndk-$PRIMARYNAME-remote.yaml
 
 
 echo "$StorageCluster" | yq e > $YAMLFILE
