@@ -72,6 +72,8 @@ spec:
       - labelSelector:
           matchLabels:
             $APPSELECTOR
+  start: true
+  useExistingConfig: false
 "
 
 YAMLFILE=applicationcr-$APPNAME.yaml
