@@ -59,7 +59,7 @@ select APPLICATION in $APPLICATIONNAMES; do
 done
 
 #Get application Namespace
-APPLICATIONNAMESPACE=$(echo "$APPLICATIONS" | jq -r '.items[].metadata | select(.name == "'"$APPLICATION"'") |.namespace')
+APPLICATIONNAMESPACE=$(echo "$APPLICATIONSJSON" | jq -r '.items[].metadata | select(.name == "'"$APPLICATION"'") |.namespace')
 #Select ProtectionPlan in namespace
 
 #find related replication target
