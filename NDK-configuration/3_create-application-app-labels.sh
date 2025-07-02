@@ -72,6 +72,9 @@ spec:
       - labelSelector:
           matchLabels:
             $APPSELECTOR
+        excludeResources:
+          - group: cilium.io
+            kind: CiliumEndpoint
   start: true
   useExistingConfig: false
 "
@@ -79,4 +82,5 @@ spec:
 YAMLFILE=applicationcr-$APPNAME.yaml
 echo "$ApplicationCR" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
-echo "to execute run : kubectl apply -f $YAMLFILE"
+echo "to apply run : "
+echo "kubectl apply -f $YAMLFILE"

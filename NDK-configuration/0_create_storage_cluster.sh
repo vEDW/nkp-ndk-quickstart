@@ -90,4 +90,5 @@ YAMLFILE=storagecluster-$PENAMELOWERCASE.yaml
 echo "$StorageCluster" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
-echo "run : kubectl apply -f $YAMLFILE to apply to cluster"
+echo "to apply to cluster, run :"
+echo "kubectl apply -f $YAMLFILE"
