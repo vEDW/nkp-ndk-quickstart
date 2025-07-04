@@ -98,12 +98,12 @@ echo "Ready to proceed to snapshot restore for application : $APPNAME"
 SNAPRESTOREYAML="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ApplicationSnapshotRestore
 metadata:
-  name: restore-$APPNAME-$SNAPNAME
-  namespace: $APPNS
+  name: restore-$SNAP
+  namespace: $SNAPSHOTNAMESPACE
 spec:
-  applicationSnapshotName: $SNAPNAME"
+  applicationSnapshotName: $SNAP"
 
-YAMLFILE=restore-$APPNAME-$SNAPNAME.yaml
+YAMLFILE=restore-$SNAP.yaml
 echo "$SNAPRESTOREYAML" | yq e > $YAMLFILE
 echo "Snapshot restore YAML file created : $YAMLFILE"
 echo "Run the following command to apply the snapshot restore:"
