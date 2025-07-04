@@ -21,7 +21,7 @@
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to install agent or CTRL-C to quit"
+echo "Select workload cluster with snapshot to restore or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
@@ -35,55 +35,63 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
-select NS in $NSS; do 
-    echo "you selected namespace : ${NS}"
-    echo 
-    APPNS="${NS}"
-    break
-done
-
-APPS=$(kubectl get deployments -n $APPNS --no-headers=true |awk '{print $1}')
-select APP in $APPS; do 
-    echo "you selected application : ${APP}"
-    echo 
-    APPNAME="${APP}"
-    break
-done
-
-SNAPSHOTS=$(kubectl get as -n $APPNS -o yaml |APPNAME=$APPNAME yq e '.items[] |select(.spec.source.applicationRef.name="env(APPNAME)")|.metadata.name')
-select SNAP in $SNAPSHOTS; do 
+#Select NDK Snapshot to restore
+APPSNAPSHOTS=$(kubectl get as  --no-headers |awk '{print $1}')
+select SNAP in $APPSNAPSHOTS; do 
     echo "you selected application snapshot : ${SNAP}"
     echo 
-    SNAPNAME="${SNAP}"
     break
 done
-PVCs=$(kubectl get deploy  -n $APPNS $APPNAME -o yaml |yq e '.spec.template.spec.volumes[].persistentVolumeClaim.claimName')
 
-echo 
-echo "Ready to proceed to snapshot restore for application : $APPNAME"
-echo "This will delete current application deployment"
-echo "and related PVCs : $PVCS"
-read -p "press enter to proceed or CTRL-C to cancel" 
-
-#kubectl delete deployment -n $APPNS $APPNAME
+#Get SnapshotJSON
+SNAPJSON=$(kubectl get as $SNAP -o json)
 if [ $? -ne 0 ]; then
-    echo "application deletion failed. Exiting."
+    echo "Snapshot $SNAP not found. Exiting."
     exit 1
 fi
 
-for PVC in $PVCs;
-do
-  echo "deleting PVC : $PVC"
-  kubectl delete pvc -n $APPNS $PVC
+#Verify content of snapshot is deleted before restore.
+SNAPSHOTNAMESPACE=$(echo $SNAPJSON |jq -r '.metadata.namespace')
+if [ $? -ne 0 ]; then
+    echo "Error getting Snapshot $SNAP namespace. Exiting."
+    exit 1
+fi
+#
+SNAPSHOTARTIFACTS=$(echo $SNAPJSON |jq -r '.status.summary.snapshotArtifacts|keys[]')
+if [ $? -ne 0 ]; then
+    echo "Error getting Snapshot $SNAP artifacts. Exiting."
+    exit 1
+fi  
+for ARTIFACT in $SNAPSHOTARTIFACTS; do
+  echo "Snapshot artifact : $ARTIFACT"
+  SHORTARTIFACT=$(echo $ARTIFACT |rev | cut -d'/' -f1 |rev)
+
+  ARTIFACTSLIST=$(echo $SNAPJSON |jq --arg ARTIFACT $ARTIFACT -r '.status.summary.snapshotArtifacts[$ARTIFACT][].name')
   if [ $? -ne 0 ]; then
-    echo "PVC $PVC deletion failed."
+      echo "Error getting Snapshot $SNAP artifact $ARTIFACT list. Exiting."
+      exit 1
   fi
+  for ARTIFACTNAME in $ARTIFACTSLIST; do
+    echo "Snapshot artifact $SHORTARTIFACT : $ARTIFACTNAME"
+    #Check if artifact is deleted
+    ARTIFACTCOUNT=$(kubectl get $SHORTARTIFACT $ARTIFACTNAME -n $SNAPSHOTNAMESPACE --no-headers)
+    if [ $? -ne 0 ]; then
+        echo "Artifact $SHORTARTIFACT : $ARTIFACTNAME not found. It is deleted."
+    else
+        echo "Artifact $SHORTARTIFACT : $ARTIFACTNAME is still present."
+        read -p "Press enter to delete or CTRL-C to cancel"
+        kubectl delete $SHORTARTIFACT $ARTIFACTNAME -n $SNAPSHOTNAMESPACE
+        if [ $? -ne 0 ]; then
+            echo "Artifact $SHORTARTIFACT : $ARTIFACTNAME deletion failed."
+            exit 1
+        else
+    fi
+  done
+  echo "All artifacts of type $SHORTARTIFACT are deleted."
 done
 
-echo
-echo "Application and PVC(s) deleted. Proceeding to snapshot restore"
-echo
+echo 
+echo "Ready to proceed to snapshot restore for application : $APPNAME"
 
 SNAPRESTOREYAML="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ApplicationSnapshotRestore
