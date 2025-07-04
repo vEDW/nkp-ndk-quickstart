@@ -86,7 +86,7 @@ for ARTIFACT in $SNAPSHOTARTIFACTS; do
         if [ $? -ne 0 ]; then
             echo "Artifact $SHORTARTIFACT : $ARTIFACTNAME deletion failed."
             exit 1
-        else
+        fi
     fi
   done
   echo "All artifacts of type $SHORTARTIFACT are deleted."
