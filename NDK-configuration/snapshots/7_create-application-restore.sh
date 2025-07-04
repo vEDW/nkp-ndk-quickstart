@@ -36,6 +36,8 @@ if [ $? -ne 0 ]; then
 fi
 
 #Select NDK Snapshot to restore
+echo
+echo "Select NDK Snapshot to restore or CTRL-C to quit"
 APPSNAPSHOTS=$(kubectl get as  --no-headers |awk '{print $1}')
 select SNAP in $APPSNAPSHOTS; do 
     echo "you selected application snapshot : ${SNAP}"
