@@ -105,5 +105,6 @@ spec:
 
 YAMLFILE=restore-$APPNAME-$SNAPNAME.yaml
 echo "$SNAPRESTOREYAML" | yq e > $YAMLFILE
-kubectl apply -f $YAMLFILE
-kubectl get -n $APPNS deploy,pvc,pod,svc,pv
+echo "Snapshot restore YAML file created : $YAMLFILE"
+echo "Run the following command to apply the snapshot restore:"
+echo "kubectl apply -f $YAMLFILE"
