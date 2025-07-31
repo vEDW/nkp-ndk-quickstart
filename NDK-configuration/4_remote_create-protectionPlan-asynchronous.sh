@@ -92,7 +92,7 @@ fi
 PROTECTIONPLAN="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ProtectionPlan
 metadata: 
- name: $SOURCENAMESPACE-protection-plan
+ name: $SOURCENAMESPACE-async-protection-plan
  namespace: $SOURCENAMESPACE
 spec: 
  protectionType: async

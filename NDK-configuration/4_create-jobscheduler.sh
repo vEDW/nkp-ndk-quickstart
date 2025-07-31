@@ -40,12 +40,12 @@ fi
 
 #Select source namespace
 echo
-echo "Listing namespaces with Replication Target defined"
+echo "Listing namespaces with Application CR defined"
 echo
-NAMESPACES=$(kubectl get replicationtarget --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
+NAMESPACES=$(kubectl get application --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
 #check if empty
 if [ -z "$NAMESPACES" ]; then
-    echo "No namespaces with Replication Target found. Please create a Replication Target first."
+    echo "No namespaces with application found. Please create an Application first."
     exit 1
 fi
 
@@ -58,37 +58,31 @@ select NAMESPACE in $NAMESPACES; do
     break
 done
 
-#select ReplicationTarget in selected namespace
-REPLICATIONTARGETS=$(kubectl get replicationtarget -n $SOURCENAMESPACE --no-headers=true |awk '{print $1}' |sort -u)
-#check if empty
-if [ -z "$REPLICATIONTARGETS" ]; then
-    echo "No Replication Targets found in namespace $SOURCENAMESPACE. Please create a Replication Target first."
+#select interval in minutes
+echo
+echo "Enter interval in minutes for Jobscheduler CR or CTRL-C to quit"
+read INTERVAL
+if ! [[ "$INTERVAL" =~ ^[0-9]+$ ]] || [ "$INTERVAL" -lt 1 ] || [ "$INTERVAL" -gt 255 ]; then
+    echo "Invalid interval. Please enter a number between 1 and 255."
     exit 1
 fi 
 
-echo
-echo "Select replication target or CTRL-C to quit"
-select REPLICATIONTARGET in $REPLICATIONTARGETS; do 
-    echo "you selected replication target : ${REPLICATIONTARGET}"
-    echo 
-    break
-done
 #Select Replication Target in namespace
 
-PROTECTIONPLAN="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: ProtectionPlan
+JOBSCHEDULER="apiVersion: scheduler.nutanix.com/v1alpha1
+kind: JobScheduler
 metadata: 
- name: $SOURCENAMESPACE-protection-plan
+ name: $SOURCENAMESPACE-jobscheduler
  namespace: $SOURCENAMESPACE
 spec: 
- protectionType: sync
- replicationConfigs:
-   - replicationTargetName: $REPLICATIONTARGET"
+ interval:
+  minutes: $INTERVAL
+ timeZoneName: "Etc/UTC""
 
-YAMLFILE=ndk-$SOURCENAMESPACE-$REPLICATIONTARGET-ProtectionPlan.yaml
+YAMLFILE=ndk-$SOURCENAMESPACE-$INTERVAL-jobscheduler.yaml
 
 
-echo "$PROTECTIONPLAN" | yq e > $YAMLFILE
+echo "$JOBSCHEDULER" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
 echo "run to apply to cluster:"
