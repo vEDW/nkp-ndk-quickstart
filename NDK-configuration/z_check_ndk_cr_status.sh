@@ -19,12 +19,12 @@
 #------------------------------------------------------------------------------
 
 echo
-echo "This script helps create JobScheduler CR"
+echo "This script helps check NDK CRs status"
 echo 
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to configure JobScheduler CR or CTRL-C to quit"
+echo "Select workload cluster or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
@@ -58,32 +58,32 @@ select NAMESPACE in $NAMESPACES; do
     break
 done
 
-#select interval in minutes
 echo
-echo "Enter interval in minutes for Jobscheduler CR or CTRL-C to quit"
-read INTERVAL
-if ! [[ "$INTERVAL" =~ ^[0-9]+$ ]] || [ "$INTERVAL" -lt 60 ] || [ "$INTERVAL" -gt 1440 ]; then
-    echo "Invalid interval. Please enter a number between 60 and 1440."
-    exit 1
-fi 
+echo "Checking NDK CR status in namespace ${SOURCENAMESPACE}"
+echo
+kubectl get storagecluster -n $SOURCENAMESPACE
+echo
+kubectl get remote,replicationtarget -n $SOURCENAMESPACE
+echo
+kubectl get application -n $SOURCENAMESPACE
+echo
+kubectl get applicationsnapshot -n $SOURCENAMESPACE
+echo
+kubectl get applicationsnapshotrestore -n $SOURCENAMESPACE
+echo
+kubectl get applicationsnapshotreplication -n $SOURCENAMESPACE
+echo
+kubectl get protectionplan -n $SOURCENAMESPACE
+echo
+kubectl get jobscheduler -n $SOURCENAMESPACE
+echo
+kubectl get applicationprotectionplan -n $SOURCENAMESPACE
+echo
+kubectl get haa,haac -n $SOURCENAMESPACE
+echo
+kubectl get AppPlannedFailover -n $SOURCENAMESPACE
+echo
+kubectl get application -n $SOURCENAMESPACE
 
-#Select Replication Target in namespace
-
-JOBSCHEDULER="apiVersion: scheduler.nutanix.com/v1alpha1
-kind: JobScheduler
-metadata: 
- name: $SOURCENAMESPACE-jobscheduler
- namespace: $SOURCENAMESPACE
-spec: 
- interval:
-  minutes: $INTERVAL
- timeZoneName: "Etc/UTC""
-
-YAMLFILE=ndk-$SOURCENAMESPACE-$INTERVAL-jobscheduler.yaml
 
 
-echo "$JOBSCHEDULER" | yq e > $YAMLFILE
-echo "$YAMLFILE created"
-echo 
-echo "run to apply to cluster:"
-echo "kubectl apply -f $YAMLFILE "
