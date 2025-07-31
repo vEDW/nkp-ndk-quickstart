@@ -68,7 +68,7 @@ ApplicationSnapshotYAML="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ApplicationSnapshot
 metadata:
   name: $APPNAME-$SNAPDATE
-  namespace: $APPNS
+  namespace: $SOURCENAMESPACE
 spec:
   source:
     applicationRef:
@@ -77,4 +77,4 @@ spec:
 
 echo "$ApplicationSnapshotYAML" | yq e > appsnapshot-$APPNAME.yaml
 kubectl apply -f appsnapshot-$APPNAME.yaml
-kubectl get as -n $APPNS
+kubectl get as -n $SOURCENAMESPACE
