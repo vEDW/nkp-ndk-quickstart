@@ -81,7 +81,7 @@ metadata:
  name: $SOURCENAMESPACE-protection-plan
  namespace: $SOURCENAMESPACE
 spec: 
- protectionType: sync
+ protectionType: async
  replicationConfigs:
    - replicationTargetName: $REPLICATIONTARGET"
 

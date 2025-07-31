@@ -109,4 +109,5 @@ YAMLFILE=ndk-$APPLICATION-AppProtectionPlan.yaml
 echo "$APPPROTECTIONPLAN" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
-echo "run to apply to cluster: kubectl apply -f $YAMLFILE "
+echo "run to apply to cluster:"
+echo "kubectl apply -f $YAMLFILE "
