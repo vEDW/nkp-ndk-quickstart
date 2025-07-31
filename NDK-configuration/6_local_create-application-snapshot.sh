@@ -55,7 +55,7 @@ select NAMESPACE in $NAMESPACES; do
 done
 
 echo "select application to create snapshot for :"
-APPS=$(kubectl get application -n $APPNS --no-headers=true |awk '{print $1}')
+APPS=$(kubectl get application -n $SOURCENAMESPACE --no-headers=true |awk '{print $1}')
 select APP in $APPS; do 
     echo "you selected application : ${APP}"
     echo 
