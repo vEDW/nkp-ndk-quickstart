@@ -61,29 +61,41 @@ done
 echo
 echo "Checking NDK CR status in namespace ${SOURCENAMESPACE}"
 echo
+echo "StorageCluster:"
 kubectl get storagecluster -n $SOURCENAMESPACE
 echo
+echo "Remote and replicationTarget:"
 kubectl get remote,replicationtarget -n $SOURCENAMESPACE
 echo
+echo "Application:"
 kubectl get application -n $SOURCENAMESPACE
 echo
+echo "ApplicationSnapshot:"
 kubectl get applicationsnapshot -n $SOURCENAMESPACE
 echo
+echo "ApplicationSnapshotRestore:"
 kubectl get applicationsnapshotrestore -n $SOURCENAMESPACE
 echo
+echo "ApplicationSnapshotReplication:"
 kubectl get applicationsnapshotreplication -n $SOURCENAMESPACE
 echo
+echo "ProtectionPlan:"
 kubectl get protectionplan -n $SOURCENAMESPACE
 echo
+echo "JobScheduler:"
 kubectl get jobscheduler -n $SOURCENAMESPACE
 echo
-kubectl get applicationprotectionplan -n $SOURCENAMESPACE
+echo "AppProtectionPlan:"
+kubectl get AppProtectionPlan -n $SOURCENAMESPACE
 echo
+echo "HAA, HAAC:"
 kubectl get haa,haac -n $SOURCENAMESPACE
 echo
+echo "AppPlannedFailover:"
 kubectl get AppPlannedFailover -n $SOURCENAMESPACE
 echo
-kubectl get application -n $SOURCENAMESPACE
+echo "AppUnplannedFailover:"
+kubectl get AppUnplannedFailover -n $SOURCENAMESPACE
 
 
 
