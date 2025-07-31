@@ -34,15 +34,27 @@ if [ $? -ne 0 ]; then
     echo "kubectl context error. Exiting."
     exit 1
 fi
+#Select source namespace
+echo
+echo "Listing namespaces with Application CR defined"
+echo
+NAMESPACES=$(kubectl get application --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
+#check if empty
+if [ -z "$NAMESPACES" ]; then
+    echo "No namespaces with application found. Please create an Application first."
+    exit 1
+fi
 
-NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
-select NS in $NSS; do 
-    echo "you selected namespace : ${NS}"
+echo
+echo "Select namespace to protect or CTRL-C to quit"
+select NAMESPACE in $NAMESPACES; do 
+    echo "you selected source namespace : ${NAMESPACE}"
     echo 
-    APPNS="${NS}"
+    SOURCENAMESPACE="${NAMESPACE}"
     break
 done
 
+echo "select application to create snapshot for :"
 APPS=$(kubectl get application -n $APPNS --no-headers=true |awk '{print $1}')
 select APP in $APPS; do 
     echo "you selected application : ${APP}"
