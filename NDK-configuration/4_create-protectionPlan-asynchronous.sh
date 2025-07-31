@@ -73,6 +73,20 @@ select REPLICATIONTARGET in $REPLICATIONTARGETS; do
     echo 
     break
 done
+
+#select retention count - min is 1 max is 15
+echo
+echo "Enter snapshot retention count (number of snapshots to keep - between 1 and 15):"
+read RETENTIONCOUNT
+if [[ ! "$RETENTIONCOUNT" =~ ^[0-9]+$ ]]; then
+    echo "Invalid input. Please enter a valid number."
+    exit 1
+fi
+if [ "$RETENTIONCOUNT" -lt 1 ] || [ "$RETENTIONCOUNT" -gt 15 ]; then
+    echo "Retention count must be between 1 and 15."
+    exit 1
+fi
+
 #Select Replication Target in namespace
 
 PROTECTIONPLAN="apiVersion: dataservices.nutanix.com/v1alpha1
@@ -83,7 +97,9 @@ metadata:
 spec: 
  protectionType: async
  replicationConfigs:
-   - replicationTargetName: $REPLICATIONTARGET"
+   - replicationTargetName: $REPLICATIONTARGET
+ retentionPolicy: 
+     retentionCount: $RETENTIONCOUNT"
 
 YAMLFILE=ndk-$SOURCENAMESPACE-$REPLICATIONTARGET-ProtectionPlan.yaml
 
