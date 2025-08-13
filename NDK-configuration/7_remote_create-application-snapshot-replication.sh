@@ -101,5 +101,11 @@ YAMLFILE=ndk-$SNAP-replication.yaml
 echo "$ApplicationSnapshotReplication" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
-echo "run to apply to cluster:"
-echo "kubectl apply -f $YAMLFILE "
+kubectl apply -f $YAMLFILE
+if [ $? -ne 0 ]; then
+    echo "Application Snapshot Replication creation failed. Exiting."
+    exit 1
+fi
+echo "Application Snapshot Replication created successfully."
+echo
+kubectl get applicationsnapshotreplication -n $SNAPSHOTNAMESPACE -w

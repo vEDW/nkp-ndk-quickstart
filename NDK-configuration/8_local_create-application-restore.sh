@@ -107,4 +107,9 @@ YAMLFILE=restore-$SNAP.yaml
 echo "$SNAPRESTOREYAML" | yq e > $YAMLFILE
 echo "Snapshot restore YAML file created : $YAMLFILE"
 echo "Run the following command to apply the snapshot restore:"
-echo "kubectl apply -f $YAMLFILE"
+kubectl apply -f $YAMLFILE
+if [ $? -ne 0 ]; then
+    echo "Snapshot restore failed. Exiting."
+    exit 1
+fi
+kubectl get ApplicationSnapshotRestore -n $SOURCENAMESPACE -w

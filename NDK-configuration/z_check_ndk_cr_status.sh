@@ -46,7 +46,12 @@ NAMESPACES=$(kubectl get application --all-namespaces --no-headers=true |awk '{p
 #check if empty
 if [ -z "$NAMESPACES" ]; then
     echo "No namespaces with application found. Please create an Application first."
-    exit 1
+    echo "Checking for Application Snapsots"
+    NAMESPACES=$(kubectl get applicationsnapshots --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
+    if [ -z "$NAMESPACES" ]; then
+        echo "No namespaces with Application Snapshots found. Please create an Application Snapshot first."
+        exit 1
+    fi 
 fi
 
 echo

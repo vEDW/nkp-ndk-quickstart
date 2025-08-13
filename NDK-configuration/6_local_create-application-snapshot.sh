@@ -73,7 +73,7 @@ spec:
   source:
     applicationRef:
       name: $APPNAME 
-  expiresAfter: 60m"
+  expiresAfter: 240m"
 
 echo "$ApplicationSnapshotYAML" | yq e > appsnapshot-$APPNAME.yaml
 kubectl apply -f appsnapshot-$APPNAME.yaml
