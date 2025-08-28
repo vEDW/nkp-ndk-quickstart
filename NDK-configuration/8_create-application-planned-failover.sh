@@ -24,7 +24,7 @@ echo
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which the application to failover is running or CTRL-C to quit"
+echo "Select workload cluster on which the application to failover is running (aka source cluster) or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
@@ -82,7 +82,7 @@ fi
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which the application to failover is running or CTRL-C to quit"
+echo "Select workload cluster on which the application to failover is running (aka DR cluster) or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
