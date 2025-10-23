@@ -78,12 +78,14 @@ for ARTIFACT in $SNAPSHOTARTIFACTS; do
       exit 1
   fi
   for ARTIFACTNAME in $ARTIFACTSLIST; do
-    echo "Snapshot artifact $SHORTARTIFACT : $ARTIFACTNAME"
+
+    echo "  Snapshot artifact $SHORTARTIFACT : $ARTIFACTNAME"
     #Check if artifact is deleted
     ARTIFACTCOUNT=$(kubectl get $SHORTARTIFACT $ARTIFACTNAME -n $SNAPSHOTNAMESPACE --no-headers)
     if [ $? -ne 0 ]; then
-        echo "Artifact $SHORTARTIFACT : $ARTIFACTNAME not found. It is deleted."
+        echo "      Artifact $SHORTARTIFACT : $ARTIFACTNAME not found. It is deleted."
     else
+        echo
         echo "Artifact $SHORTARTIFACT : $ARTIFACTNAME is still present."
         read -p "Press enter to delete or CTRL-C to cancel"
         kubectl delete $SHORTARTIFACT $ARTIFACTNAME -n $SNAPSHOTNAMESPACE
@@ -93,7 +95,9 @@ for ARTIFACT in $SNAPSHOTARTIFACTS; do
         fi
     fi
   done
+  echo
   echo "All artifacts of type $SHORTARTIFACT are deleted."
+  echo
 done
 
 echo 
@@ -110,7 +114,6 @@ spec:
 YAMLFILE=restore-$SNAP.yaml
 echo "$SNAPRESTOREYAML" | yq e > $YAMLFILE
 echo "Snapshot restore YAML file created : $YAMLFILE"
-echo "Run the following command to apply the snapshot restore:"
 kubectl apply -f $YAMLFILE
 if [ $? -ne 0 ]; then
     echo "Snapshot restore failed. Exiting."
