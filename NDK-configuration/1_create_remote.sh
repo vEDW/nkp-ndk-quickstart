@@ -53,6 +53,7 @@ fi
 
 
 PRIMARYNAME=$(echo $PRIMARYCLUSTERCTX | cut -d "@" -f2)
+REMOTENAME=$(echo $REMOTECLUSTERCTX | cut -d "@" -f2)
 
 REMOTELBIP=$(kubectl get svc ndk-intercom-service -n ntnx-system -o json |jq -r '.status.loadBalancer.ingress[].ip')
 #check if REMOTELBIP is empty
@@ -67,7 +68,7 @@ kubectl config use-context $PRIMARYCLUSTERCTX
 StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: Remote
 metadata:
-  name: $PRIMARYNAME-remote
+  name: $REMOTENAME-remote
 spec:
   ndkServiceIp: $REMOTELBIP
   ndkServicePort: 2021
