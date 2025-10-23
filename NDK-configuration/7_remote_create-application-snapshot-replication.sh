@@ -108,4 +108,4 @@ if [ $? -ne 0 ]; then
 fi
 echo "Application Snapshot Replication created successfully."
 echo
-kubectl get applicationsnapshotreplication -n $SNAPSHOTNAMESPACE -w
+kubectl get -f $YAMLFILE -w

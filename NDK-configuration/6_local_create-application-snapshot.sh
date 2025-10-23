@@ -77,4 +77,4 @@ spec:
 
 echo "$ApplicationSnapshotYAML" | yq e > appsnapshot-$APPNAME.yaml
 kubectl apply -f appsnapshot-$APPNAME.yaml
-kubectl get as -n $SOURCENAMESPACE -w
+kubectl get -f appsnapshot-$APPNAME.yaml -w
