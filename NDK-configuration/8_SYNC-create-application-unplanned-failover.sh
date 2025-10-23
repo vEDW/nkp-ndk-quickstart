@@ -19,8 +19,15 @@
 #------------------------------------------------------------------------------
 
 echo
-echo "This script helps create an Application Planned Failover CR"
+echo "This script helps create an Application UN-Planned Failover CR"
 echo 
+echo "This means that the application failover is initiated from the DR site without prior notification to the primary site."
+echo "This is typically used in disaster recovery scenarios where the primary site is unavailable."
+echo
+echo "This applies only to applications protected with SYNCHRONOUS replication."
+echo
+echo "Proceed only if you understand the implications of an un-planned failover."
+echo
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
@@ -104,9 +111,9 @@ if [[ -z "$DRNAMESPACES" ]]; then
 fi
 
 APPPLANNEDFAILOVER="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: AppPlannedFailover
+kind: AppUnplannedFailover
 metadata:
-  name: $APPLICATION-pfo
+  name: $APPLICATION-upfo
   namespace: $REPLICATIONTARGETNAMEREMOTENAMESPACE
 spec:
   applicationName: $APPLICATION"

@@ -18,6 +18,9 @@
 # Contributors: 
 #------------------------------------------------------------------------------
 
+echo
+echo "This script helps create an Application Snapshot Restore CR"
+echo
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
