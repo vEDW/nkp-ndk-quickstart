@@ -119,4 +119,4 @@ if [ $? -ne 0 ]; then
     echo "Snapshot restore failed. Exiting."
     exit 1
 fi
-kubectl get ApplicationSnapshotRestore -n $SOURCENAMESPACE -w
+kubectl get -f $YAMLFILE -w
