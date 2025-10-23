@@ -38,26 +38,27 @@ fi
 #Select NDK Snapshot to restore
 echo
 echo "Select NDK Snapshot to restore or CTRL-C to quit"
-APPSNAPSHOTS=$(kubectl get as  --no-headers |awk '{print $1}')
+APPSNAPSHOTS=$(kubectl get as -A  --no-headers |awk '{print $2}')
 select SNAP in $APPSNAPSHOTS; do 
     echo "you selected application snapshot : ${SNAP}"
     echo 
     break
 done
 
+#Verify content of snapshot is deleted before restore.
+SNAPSHOTNAMESPACE=$(kubectl get as -A  --no-headers |grep ${SNAP} |awk '{print $1}')
+if [ $? -ne 0 ]; then
+    echo "Error getting Snapshot $SNAP namespace. Exiting."
+    exit 1
+fi
+
 #Get SnapshotJSON
-SNAPJSON=$(kubectl get as $SNAP -o json)
+SNAPJSON=$(kubectl get as $SNAP -n $SNAPSHOTNAMESPACE -o json)
 if [ $? -ne 0 ]; then
     echo "Snapshot $SNAP not found. Exiting."
     exit 1
 fi
 
-#Verify content of snapshot is deleted before restore.
-SNAPSHOTNAMESPACE=$(echo $SNAPJSON |jq -r '.metadata.namespace')
-if [ $? -ne 0 ]; then
-    echo "Error getting Snapshot $SNAP namespace. Exiting."
-    exit 1
-fi
 #
 SNAPSHOTARTIFACTS=$(echo $SNAPJSON |jq -r '.status.summary.snapshotArtifacts|keys[]')
 if [ $? -ne 0 ]; then
