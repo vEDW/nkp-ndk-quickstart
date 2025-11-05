@@ -51,7 +51,7 @@ select APP in $APPS; do
     break
 done
 APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
-APPSELECTORS=$(echo "${APPYAML}" | yq e '.metadata.labels')
+APPSELECTORS=$(echo "${APPYAML}" | yq e '.metadata.labels' |sed 's/: /=/')
 echo 
 echo "Select application label to use for Application CR or CTRL-C to quit"
 select APPSELECTOR in $APPSELECTORS; do 
@@ -62,8 +62,9 @@ done
 
 echo
 echo "Application resources in namespace $APPNS with label $APPSELECTOR : "
-LABELS=$(echo $APPSELECTOR |sed 's/: /=/')
-kubectl get all,pvc -n $APPNS -l $LABELS
+# LABELS=$(echo $APPSELECTOR |sed 's/: /=/')
+#kubectl get all,pvc -n $APPNS -l $LABELS
+kubectl get all,secret,pvc -n $APPNS -l $APPSELECTOR
 echo
 
 ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
