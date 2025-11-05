@@ -51,9 +51,14 @@ select APP in $APPS; do
     break
 done
 APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
-APPSELECTOR=$(echo "${APPYAML}" | yq e '.metadata.labels')
-echo "Application Selector : $APPSELECTOR"
-echo
+APPSELECTORS=$(echo "${APPYAML}" | yq e '.metadata.labels')
+echo 
+echo "Select application label to use for Application CR or CTRL-C to quit"
+select APPSELECTOR in $APPSELECTORS; do 
+    echo "you selected application label : ${APPSELECTOR}"
+    echo 
+    break
+done
 
 echo
 echo "Application resources in namespace $APPNS with label $APPSELECTOR : "
