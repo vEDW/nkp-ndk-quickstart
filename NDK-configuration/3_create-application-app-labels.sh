@@ -51,7 +51,7 @@ select APP in $APPS; do
     break
 done
 APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
-APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
+APPSELECTOR=$(echo "${APPYAML}" | yq e '.metadata.labels')
 echo "Application Selector : $APPSELECTOR"
 echo
 
