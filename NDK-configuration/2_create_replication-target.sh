@@ -102,7 +102,7 @@ kubectl config use-context $PRIMARYCLUSTERCTX
 StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ReplicationTarget
 metadata:
-  name: replication-$PRIMARYNAME
+  name: replication-$REMOTECR
   namespace: $SOURCENAMESPACE
 spec:
   namespaceName: $TARGETNAMESPACE
