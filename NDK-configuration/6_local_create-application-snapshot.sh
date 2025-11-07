@@ -21,7 +21,7 @@
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to install agent or CTRL-C to quit"
+echo "Select workload cluster on which to configure Application Snapshot CR  or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 

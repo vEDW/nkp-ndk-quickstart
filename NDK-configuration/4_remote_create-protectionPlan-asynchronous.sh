@@ -19,12 +19,12 @@
 #------------------------------------------------------------------------------
 
 echo
-echo "This script helps create Protection Plan CR"
+echo "This script helps create Async Protection Plan CR"
 echo 
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to configure Protection Plan CR or CTRL-C to quit"
+echo "Select workload cluster on which to configure Async Protection Plan CR or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
