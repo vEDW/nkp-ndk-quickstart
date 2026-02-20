@@ -32,7 +32,7 @@ if [[ ! -d "$ndkdir" ]]; then
 fi
 
 echo "loading ndk in docker images"
-ndktar=$(ls $ndkdir/ndk-*tar)
+ndktar=$(ls $ndkdir/ndk-*tar |grep -v recipes)
 if [[ ! -e "$ndktar" ]]; then
     echo "No ndk tar found. Exiting."
     exit 1
@@ -43,6 +43,7 @@ if [ $? -ne 0 ]; then
     echo "docker image ($ndktar) load. Exiting."
     exit 1
 fi
+
 
 #docker images -f reference=ndk
 docker images |grep ndk 
