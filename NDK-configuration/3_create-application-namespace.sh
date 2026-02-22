@@ -58,7 +58,7 @@ spec:
   useExistingConfig: false
 "
 
-YAMLFILE=applicationcr-$APPNAME.yaml
+YAMLFILE=applicationcr-$NS-application.yaml
 echo "$ApplicationCR" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo "to apply run : "
