@@ -42,7 +42,8 @@ fi
 #Select NDK Snapshot to restore
 echo
 echo "Select NDK Snapshot to replicate or CTRL-C to quit"
-APPSNAPSHOTS=$(kubectl get as  --no-headers |awk '{print $1}')
+APPSNAPSHOTS=$(kubectl get as -A  --no-headers)
+APPSNAPSHOTNAMES=$(echo "$APPSNAPSHOTS" |awk '{print $2}')
 if [ -z "$APPSNAPSHOTS" ]; then
     echo "No Application Snapshots found. Please create an Application Snapshot first."
     exit 1
@@ -53,23 +54,18 @@ select SNAP in $APPSNAPSHOTS; do
     break
 done
 
-#Get SnapshotJSON
-SNAPJSON=$(kubectl get as $SNAP -o json)
-if [ $? -ne 0 ]; then
-    echo "Snapshot $SNAP not found. Exiting."
-    exit 1
-fi
-
-#Verify content of snapshot is deleted before restore.
-SNAPSHOTNAMESPACE=$(echo $SNAPJSON |jq -r '.metadata.namespace')
+APPSNAPSHOTNAMESPACE=$(echo "$APPSNAPSHOTS" |grep ${SNAP} | awk '{print $1}')
 if [ $? -ne 0 ]; then
     echo "Error getting Snapshot $SNAP namespace. Exiting."
     exit 1
 fi
 
+echo
+echo "Snapshot namespace is $APPSNAPSHOTNAMESPACE"
+echo
 
 #select ReplicationTarget in selected namespace
-REPLICATIONTARGETS=$(kubectl get replicationtarget -n $SNAPSHOTNAMESPACE --no-headers=true |awk '{print $1}' |sort -u)
+REPLICATIONTARGETS=$(kubectl get replicationtarget -n $APPSNAPSHOTNAMESPACE --no-headers=true |awk '{print $1}' |sort -u)
 #check if empty
 if [ -z "$REPLICATIONTARGETS" ]; then
     echo "No Replication Targets found in namespace $SNAPSHOTNAMESPACE. Please create a Replication Target first."
@@ -79,11 +75,11 @@ fi
 echo
 echo "Select replication target or CTRL-C to quit"
 select REPLICATIONTARGET in $REPLICATIONTARGETS; do 
+    echo
     echo "you selected replication target : ${REPLICATIONTARGET}"
     echo 
     break
 done
-
 
 ApplicationSnapshotReplication="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ApplicationSnapshotReplication
@@ -94,9 +90,7 @@ spec:
   applicationSnapshotName: $SNAP
   replicationTargetName: $REPLICATIONTARGET"
   
-
 YAMLFILE=ndk-$SNAP-replication.yaml
-
 
 echo "$ApplicationSnapshotReplication" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
