@@ -48,4 +48,4 @@ mv ndkcli-linux-amd64 ndkcli
 # Success message
 echo "NDK CLI installed successfully!"
 echo "checking version"
-ndkcli version
+./ndkcli version
