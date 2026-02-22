@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
 
 #------------------------------------------------------------------------------
 
@@ -18,33 +20,32 @@
 
 #------------------------------------------------------------------------------
 
-# Maintainer:   Eric De Witte (eric.dewitte@nutanix.com)
-# Contributors: 
 
-#------------------------------------------------------------------------------
+# Prompt the user for the download link
+echo 'open browser to site : https://portal.nutanix.com/page/downloads?product=ndk and find "CLI for Nutanix Data Services for Kubernetes (linux-amd64)" '
+read -p "Enter download link: " url < /dev/tty
 
-echo "checking NDK"
-ndkdir=$(ls -d ndk-*)
-# Check if directory is empty
-if [[ ! -d "$ndkdir" ]]; then
-    echo "No ndk directory. Exiting."
-    exit 1
-fi
-
-echo "loading ndk in docker images"
-ndktar=$(ls $ndkdir/ndk-*tar |grep -v recipes)
-if [[ ! -e "$ndktar" ]]; then
-    echo "No ndk tar found. Exiting."
-    exit 1
-fi
-
-docker image load -i $ndktar
+# Download the file with wget and check for errors
+wget -O ndkcli.tgz "$url"
 if [ $? -ne 0 ]; then
-    echo "docker image ($ndktar) load. Exiting."
+    echo "Download failed. Exiting."
     exit 1
 fi
 
+# Extract the downloaded file and check for errors
+tar xzf ndkcli.tgz 
+if [ $? -ne 0 ]; then
+    echo "Extraction failed. Exiting."
+    exit 1
+fi
 
-#docker images -f reference=ndk
-docker images |grep ndk 
-echo
+# Clean up downloaded files
+rm -f ndkcli.tgz
+
+#rename extracted file to ndkcli
+mv ndkcli-linux-amd64 ndkcli
+
+# Success message
+echo "NDK CLI installed successfully!"
+echo "checking version"
+./ndkcli version

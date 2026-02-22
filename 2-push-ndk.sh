@@ -53,15 +53,16 @@ do
         exit 1
     fi
     originalagenttag=$(echo $imagejson | jq -r '.Tag')
+    originalRepository=$(echo $imagejson | jq -r '.Repository')
 
-    docker image tag $IMAGE:$originalagenttag  $registry/$registryrepo/$IMAGE:$originalagenttag
-    docker push $registry/$registryrepo/$IMAGE:$originalagenttag
+    docker image tag $originalRepository:$originalagenttag  $registry/$registryrepo/$originalRepository:$originalagenttag
+    docker push $registry/$registryrepo/$originalRepository:$originalagenttag
     if [ $? -ne 0 ]; then
         echo "docker image push error. Exiting."
         exit 1
     fi
 
-    echo "$registry/$registryrepo/$IMAGE:$originalagenttag" >> ndkimagerepo
+    echo "$registry/$registryrepo/$originalRepository:$originalagenttag" >> ndkimagerepo
 done
 
 echo 

@@ -21,7 +21,7 @@
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to install agent or CTRL-C to quit"
+echo "Select workload cluster on which to configure Application Snapshot CR  or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
@@ -34,50 +34,47 @@ if [ $? -ne 0 ]; then
     echo "kubectl context error. Exiting."
     exit 1
 fi
+#Select source namespace
+echo
+echo "Listing namespaces with Application CR defined"
+echo
+NAMESPACES=$(kubectl get application --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
+#check if empty
+if [ -z "$NAMESPACES" ]; then
+    echo "No namespaces with application found. Please create an Application first."
+    exit 1
+fi
 
-NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
-select NS in $NSS; do 
-    echo "you selected namespace : ${NS}"
+echo
+echo "Select namespace to protect or CTRL-C to quit"
+select NAMESPACE in $NAMESPACES; do 
+    echo "you selected source namespace : ${NAMESPACE}"
     echo 
-    APPNS="${NS}"
+    SOURCENAMESPACE="${NAMESPACE}"
     break
 done
 
-APPS=$(kubectl get deployments -n $APPNS --no-headers=true |awk '{print $1}')
+echo "select application to create snapshot for :"
+APPS=$(kubectl get application -n $SOURCENAMESPACE --no-headers=true |awk '{print $1}')
 select APP in $APPS; do 
     echo "you selected application : ${APP}"
     echo 
     APPNAME="${APP}"
     break
 done
-APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
-APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
-echo "Application Selector : $APPSELECTOR"
-echo
+SNAPDATE=$(date '+%Y-%m-%d-%Hh%M')
 
-echo
-echo "Application resources in namespace $APPNS with label $APPSELECTOR : "
-LABELS=$(echo $APPSELECTOR |sed 's/: /=/')
-kubectl get all,pvc -n $APPNS -l $LABELS
-echo
-
-ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: Application
+ApplicationSnapshotYAML="apiVersion: dataservices.nutanix.com/v1alpha1
+kind: ApplicationSnapshot
 metadata:
-  name: $APPNAME
-  namespace: $NS
+  name: $APPNAME-$SNAPDATE
+  namespace: $SOURCENAMESPACE
 spec:
-  applicationSelector:
-    resourceLabelSelectors:
-      - labelSelector:
-          matchLabels:
-            $APPSELECTOR
-      - excludeResources:
-          - group: "cilium.io"
-            kind: "CiliumEndpoint"
-"
+  source:
+    applicationRef:
+      name: $APPNAME 
+  expiresAfter: 240m"
 
-YAMLFILE=applicationcr-$APPNAME.yaml
-echo "$ApplicationCR" | yq e > $YAMLFILE
-echo "$YAMLFILE created"
-echo "to execute run : kubectl apply -f $YAMLFILE"
+echo "$ApplicationSnapshotYAML" | yq e > appsnapshot-$APPNAME.yaml
+kubectl apply -f appsnapshot-$APPNAME.yaml
+kubectl get -f appsnapshot-$APPNAME.yaml -w

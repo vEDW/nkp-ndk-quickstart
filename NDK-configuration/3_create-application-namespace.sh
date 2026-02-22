@@ -21,7 +21,7 @@
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to install agent or CTRL-C to quit"
+echo "Select workload cluster on which to configure application CR or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
@@ -43,57 +43,23 @@ select NS in $NSS; do
     break
 done
 
-APPS=$(kubectl get deployments -n $APPNS --no-headers=true |awk '{print $1}')
-select APP in $APPS; do 
-    echo "you selected application : ${APP}"
-    echo 
-    APPNAME="${APP}"
-    break
-done
-
-SNAPSHOTS=$(kubectl get as -n $APPNS -o yaml |APPNAME=$APPNAME yq e '.items[] |select(.spec.source.applicationRef.name="env(APPNAME)")|.metadata.name')
-select SNAP in $SNAPSHOTS; do 
-    echo "you selected application snapshot : ${SNAP}"
-    echo 
-    SNAPNAME="${SNAP}"
-    break
-done
-PVCs=$(kubectl get deploy  -n $APPNS $APPNAME -o yaml |yq e '.spec.template.spec.volumes[].persistentVolumeClaim.claimName')
-
-echo 
-echo "Ready to proceed to snapshot restore for application : $APPNAME"
-echo "This will delete current application deployment"
-echo "and related PVCs : $PVCS"
-read -p "press enter to proceed or CTRL-C to cancel" 
-
-#kubectl delete deployment -n $APPNS $APPNAME
-if [ $? -ne 0 ]; then
-    echo "application deletion failed. Exiting."
-    exit 1
-fi
-
-for PVC in $PVCs;
-do
-  echo "deleting PVC : $PVC"
-  kubectl delete pvc -n $APPNS $PVC
-  if [ $? -ne 0 ]; then
-    echo "PVC $PVC deletion failed."
-  fi
-done
-
-echo
-echo "Application and PVC(s) deleted. Proceeding to snapshot restore"
-echo
-
-SNAPRESTOREYAML="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: ApplicationSnapshotRestore
+ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
+kind: Application
 metadata:
-  name: restore-$APPNAME-$SNAPNAME
-  namespace: $APPNS
+  name: $NS-application
+  namespace: $NS
 spec:
-  applicationSnapshotName: $SNAPNAME"
+  applicationSelector:
+    resourceLabelSelectors:
+      - excludeResources:
+          - group: cilium.io
+            kind: CiliumEndpoint
+  start: true
+  useExistingConfig: false
+"
 
-YAMLFILE=restore-$APPNAME-$SNAPNAME.yaml
-echo "$SNAPRESTOREYAML" | yq e > $YAMLFILE
-kubectl apply -f $YAMLFILE
-kubectl get -n $APPNS deploy,pvc,pod,svc,pv
+YAMLFILE=applicationcr-$NS-application.yaml
+echo "$ApplicationCR" | yq e > $YAMLFILE
+echo "$YAMLFILE created"
+echo "to apply run : "
+echo "kubectl apply -f $YAMLFILE"

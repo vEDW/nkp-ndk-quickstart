@@ -21,7 +21,7 @@
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to install agent or CTRL-C to quit"
+echo "Select workload cluster on which to configure application CR or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
@@ -35,60 +35,52 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-CSICREDS=$(kubectl get secret nutanix-csi-credentials -n ntnx-system -o yaml |yq e '.data.key' |base64 -d)
-CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
-CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
-CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
-export PCADMIN=$CSIUSER
-export PCPASSWD=$CSIPASSWD
-export PCIPADDRESS=$CSIPC
-
-source ../pc-restapi/prism-rest-api.sh
-echo echo "getting aos clusters"
-PENAMES=$(get_aos_clusters_name) 
-select PENAME in $PENAMES; do 
-    echo "you selected PE Cluster : ${PENAME}"
+NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
+select NS in $NSS; do 
+    echo "you selected namespace : ${NS}"
     echo 
-    PENAME="${PENAME}"
-    PENAMELOWERCASE=$(echo "${PENAME}"| tr '[:upper:]' '[:lower:]' )
+    APPNS="${NS}"
     break
 done
 
-echo $PENAME
-echo
-PEUUID=$(get_aos_clusters_uuid $PENAME)
-if [ "$PEUUID" == "" ]; then
-    echo "getting PE $PENAME UUID error. Exiting."
-    exit 1
-fi
-
-echo $PEUUID
-echo
-echo "getting PC clusters"
-
-PCUUID=$(get_PC_clusters_uuid)
-if [ "$PCUUID" == "" ]; then
-    echo "getting PC UUID error. Exiting."
-    exit 1
-fi
-
-echo $PCUUID
+APPS=$(kubectl get deployments -n $APPNS --no-headers=true |awk '{print $1}')
+select APP in $APPS; do 
+    echo "you selected application : ${APP}"
+    echo 
+    APPNAME="${APP}"
+    break
+done
+APPYAML=$(kubectl get deployment -n $APPNS  $APPNAME -o yaml)
+APPSELECTOR=$(echo "${APPYAML}" | yq e '.spec.selector.matchLabels')
+echo "Application Selector : $APPSELECTOR"
 echo
 
-SCS=$(kubectl get sc -A|grep nutanix |awk '{print $1}')
+echo
+echo "Application resources in namespace $APPNS with label $APPSELECTOR : "
+LABELS=$(echo $APPSELECTOR |sed 's/: /=/')
+kubectl get all,secret,pvc -n $APPNS -l $LABELS
+echo
 
-StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: StorageCluster
+ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
+kind: Application
 metadata:
- name: $PENAMELOWERCASE
+  name: $APPNAME
+  namespace: $NS
 spec:
- storageServerUuid: $PEUUID
- managementServerUuid: $PCUUID"
+  applicationSelector:
+    resourceLabelSelectors:
+      - labelSelector:
+          matchLabels:
+            $APPSELECTOR
+        excludeResources:
+          - group: cilium.io
+            kind: CiliumEndpoint
+  start: true
+  useExistingConfig: false
+"
 
-YAMLFILE=storagecluster-$PENAMELOWERCASE.yaml
-
-echo "$StorageCluster" | yq e > $YAMLFILE
+YAMLFILE=applicationcr-$APPNAME.yaml
+echo "$ApplicationCR" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
-echo 
-echo "to apply to cluster, run :"
+echo "to apply run : "
 echo "kubectl apply -f $YAMLFILE"

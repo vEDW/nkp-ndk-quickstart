@@ -21,48 +21,65 @@
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to install agent or CTRL-C to quit"
+echo "Select workload cluster on which to configure remote CR or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
-    CLUSTERCTX="${CONTEXT}"
+    PRIMARYCLUSTERCTX="${CONTEXT}"
     break
 done
 
-kubectl config use-context $CLUSTERCTX
+kubectl config use-context $PRIMARYCLUSTERCTX
 if [ $? -ne 0 ]; then
-    echo "kubectl context error. Exiting."
+    echo "kubectl $PRIMARYCLUSTERCTX context error. Exiting."
     exit 1
 fi
 
-NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
-select NS in $NSS; do 
-    echo "you selected namespace : ${NS}"
+CONTEXTS=$(kubectl config get-contexts --output=name)
+echo
+echo "Select REMOTE workload cluster or CTRL-C to quit"
+select CONTEXT in $CONTEXTS; do 
+    echo "you selected cluster context : ${CONTEXT}"
     echo 
-    APPNS="${NS}"
+    REMOTECLUSTERCTX="${CONTEXT}"
     break
 done
 
-APPS=$(kubectl get application -n $APPNS --no-headers=true |awk '{print $1}')
-select APP in $APPS; do 
-    echo "you selected application : ${APP}"
-    echo 
-    APPNAME="${APP}"
-    break
-done
-SNAPDATE=$(date '+%Y-%m-%d-%Hh%M')
+kubectl config use-context $REMOTECLUSTERCTX
+if [ $? -ne 0 ]; then
+    echo "kubectl $REMOTECLUSTERCTX context error. Exiting."
+    exit 1
+fi
 
-ApplicationSnapshotYAML="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: ApplicationSnapshot
+
+PRIMARYNAME=$(echo $PRIMARYCLUSTERCTX | cut -d "@" -f2)
+REMOTENAME=$(echo $REMOTECLUSTERCTX | cut -d "@" -f2)
+
+REMOTELBIP=$(kubectl get svc ndk-intercom-service -n ntnx-system -o json |jq -r '.status.loadBalancer.ingress[].ip')
+#check if REMOTELBIP is empty
+if [ -z "$REMOTELBIP" ]; then
+    echo "Remote LoadBalancer IP not found. Please check if NDK is installed on remote cluster."
+    exit 1
+fi
+
+kubectl config use-context $PRIMARYCLUSTERCTX
+
+
+StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
+kind: Remote
 metadata:
-  name: $APPNAME-$SNAPDATE
-  namespace: $APPNS
+  name: $REMOTENAME-remote
 spec:
-  source:
-    applicationRef:
-      name: $APPNAME 
-  expiresAfter: 60m"
+  ndkServiceIp: $REMOTELBIP
+  ndkServicePort: 2021
+  tlsConfig:
+    skipTLSVerify: true"
 
-echo "$ApplicationSnapshotYAML" | yq e > appsnapshot-$APPNAME.yaml
-kubectl apply -f appsnapshot-$APPNAME.yaml
-kubectl get as -n $APPNS
+YAMLFILE=ndk-$PRIMARYNAME-remote.yaml
+
+
+echo "$StorageCluster" | yq e > $YAMLFILE
+echo "$YAMLFILE created"
+echo 
+echo "run to apply to cluster:"
+echo "kubectl apply -f $YAMLFILE"

@@ -89,22 +89,22 @@ CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
 CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
 CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
 NDKSECRET=nutanix-csi-credentials
-if  [ $CSIUSER != "admin" ]; then
-    echo "nutanix-csi-credentials user is not 'admin'."
-    echo
+# if  [ $CSIUSER != "admin" ]; then
+#     echo "nutanix-csi-credentials user is not 'admin'."
+#     echo
     
-    echo "provide admin password for ndk secret creation or press CTRL-C to cancel"
-    read -sp "admin password: " adminpasswd < /dev/tty
+#     echo "provide admin password for ndk secret creation or press CTRL-C to cancel"
+#     read -sp "admin password: " adminpasswd < /dev/tty
 
-    if [ $adminpasswd != "" ]
-    then
-        kubectl create secret generic ndk-credentials -n ntnx-system --from-literal key="$CSIPC:9440:admin:$adminpasswd"
-        NDKSECRET=ndk-credentials
-    else
-        echo "admin password is empty. exiting"
-        exit 1
-    fi
-fi
+#     if [ $adminpasswd != "" ]
+#     then
+#         kubectl create secret generic ndk-credentials -n ntnx-system --from-literal key="$CSIPC:9440:admin:$adminpasswd"
+#         NDKSECRET=ndk-credentials
+#     else
+#         echo "admin password is empty. exiting"
+#         exit 1
+#     fi
+# fi
 
 #Getting Nutanix PC creds for agent
 NDKIMGREPO=$(cat "./ndkimagerepo")
@@ -117,9 +117,9 @@ MGRTAG=$(echo "$NDKIMGREPO"  |grep /manager |awk -F ':' '{print $2}')
 INFRAMGRREPO=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $1}' )
 INFRAMGRTAG=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $2}')
 
-#bitnami
-BITNAMIREPO=$(echo "$NDKIMGREPO"  |grep /bitnami |awk -F ':' '{print $1}' )
-BITNAMITAG=$(echo "$NDKIMGREPO"  |grep /bitnami |awk -F ':' '{print $2}')
+#KUBECTL
+KUBECTLREPO=$(echo "$NDKIMGREPO"  |grep /kubectl |awk -F ':' '{print $1}' )
+KUBECTLTAG=$(echo "$NDKIMGREPO"  |grep /kubectl |awk -F ':' '{print $2}')
 
 #job-scheduler
 JOBREPO=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $1}' )
@@ -136,12 +136,17 @@ helm install ndk -n ntnx-system  $k8sdir/chart \
 --set infraManager.tag=$INFRAMGRTAG \
 --set kubeRbacProxy.repository=$KUBERBACREPO \
 --set kubeRbacProxy.tag=$KUBERBACTAG \
---set bitnamiKubectl.repository=$BITNAMIREPO \
---set bitnamiKubectl.tag=$BITNAMITAG \
+--set kubectl.repository=$KUBECTLREPO \
+--set kubectl.tag=$KUBECTLTAG \
 --set jobScheduler.repository=$JOBREPO \
 --set jobScheduler.tag=$JOBTAG \
 --set tls.server.clusterName=$CLUSTER_NAME \
 --set config.secret.name=$NDKSECRET 
 
+#checking if helm install was successful
+if [ $? -ne 0 ]; then
+    echo "Helm install failed. Exiting."
+    exit 1
+fi  
 echo
 echo "NDK chart installed"

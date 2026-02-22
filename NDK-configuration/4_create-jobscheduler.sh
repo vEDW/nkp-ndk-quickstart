@@ -18,77 +18,72 @@
 # Contributors: 
 #------------------------------------------------------------------------------
 
+echo
+echo "This script helps create JobScheduler CR"
+echo 
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to install agent or CTRL-C to quit"
+echo "Select workload cluster on which to configure JobScheduler CR or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
-    CLUSTERCTX="${CONTEXT}"
+    PRIMARYCLUSTERCTX="${CONTEXT}"
     break
 done
 
-kubectl config use-context $CLUSTERCTX
+kubectl config use-context $PRIMARYCLUSTERCTX
 if [ $? -ne 0 ]; then
-    echo "kubectl context error. Exiting."
+    echo "kubectl $PRIMARYCLUSTERCTX context error. Exiting."
     exit 1
 fi
 
-CSICREDS=$(kubectl get secret nutanix-csi-credentials -n ntnx-system -o yaml |yq e '.data.key' |base64 -d)
-CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
-CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
-CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
-export PCADMIN=$CSIUSER
-export PCPASSWD=$CSIPASSWD
-export PCIPADDRESS=$CSIPC
+#Select source namespace
+echo
+echo "Listing namespaces with Application CR defined"
+echo
+NAMESPACES=$(kubectl get application --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
+#check if empty
+if [ -z "$NAMESPACES" ]; then
+    echo "No namespaces with application found. Please create an Application first."
+    exit 1
+fi
 
-source ../pc-restapi/prism-rest-api.sh
-echo echo "getting aos clusters"
-PENAMES=$(get_aos_clusters_name) 
-select PENAME in $PENAMES; do 
-    echo "you selected PE Cluster : ${PENAME}"
+echo
+echo "Select namespace to protect or CTRL-C to quit"
+select NAMESPACE in $NAMESPACES; do 
+    echo "you selected source namespace : ${NAMESPACE}"
     echo 
-    PENAME="${PENAME}"
-    PENAMELOWERCASE=$(echo "${PENAME}"| tr '[:upper:]' '[:lower:]' )
+    SOURCENAMESPACE="${NAMESPACE}"
     break
 done
 
-echo $PENAME
+#select interval in minutes
 echo
-PEUUID=$(get_aos_clusters_uuid $PENAME)
-if [ "$PEUUID" == "" ]; then
-    echo "getting PE $PENAME UUID error. Exiting."
+echo "Enter interval in minutes for Jobscheduler CR or CTRL-C to quit"
+read INTERVAL
+if ! [[ "$INTERVAL" =~ ^[0-9]+$ ]] || [ "$INTERVAL" -lt 60 ] || [ "$INTERVAL" -gt 1440 ]; then
+    echo "Invalid interval. Please enter a number between 60 and 1440."
     exit 1
-fi
+fi 
 
-echo $PEUUID
-echo
-echo "getting PC clusters"
+#Select Replication Target in namespace
 
-PCUUID=$(get_PC_clusters_uuid)
-if [ "$PCUUID" == "" ]; then
-    echo "getting PC UUID error. Exiting."
-    exit 1
-fi
+JOBSCHEDULER="apiVersion: scheduler.nutanix.com/v1alpha1
+kind: JobScheduler
+metadata: 
+ name: $SOURCENAMESPACE-jobscheduler
+ namespace: $SOURCENAMESPACE
+spec: 
+ interval:
+  minutes: $INTERVAL
+ timeZoneName: "Etc/UTC""
 
-echo $PCUUID
-echo
+YAMLFILE=ndk-$SOURCENAMESPACE-$INTERVAL-jobscheduler.yaml
 
-SCS=$(kubectl get sc -A|grep nutanix |awk '{print $1}')
 
-StorageCluster="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: StorageCluster
-metadata:
- name: $PENAMELOWERCASE
-spec:
- storageServerUuid: $PEUUID
- managementServerUuid: $PCUUID"
-
-YAMLFILE=storagecluster-$PENAMELOWERCASE.yaml
-
-echo "$StorageCluster" | yq e > $YAMLFILE
+echo "$JOBSCHEDULER" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
-echo "to apply to cluster, run :"
-echo "kubectl apply -f $YAMLFILE"
+echo "run to apply to cluster:"
+echo "kubectl apply -f $YAMLFILE "
