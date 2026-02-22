@@ -62,7 +62,7 @@ do
         exit 1
     fi
 
-    echo "$registry/$registryrepo/$IMAGE:$originalagenttag" >> ndkimagerepo
+    echo "$registry/$registryrepo/$originalRepository:$originalagenttag" >> ndkimagerepo
 done
 
 echo 
