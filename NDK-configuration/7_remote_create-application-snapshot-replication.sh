@@ -68,7 +68,7 @@ echo
 REPLICATIONTARGETS=$(kubectl get replicationtarget -n $APPSNAPSHOTNAMESPACE --no-headers=true |awk '{print $1}' |sort -u)
 #check if empty
 if [ -z "$REPLICATIONTARGETS" ]; then
-    echo "No Replication Targets found in namespace $SNAPSHOTNAMESPACE. Please create a Replication Target first."
+    echo "No Replication Targets found in namespace $APPSNAPSHOTNAMESPACE. Please create a Replication Target first."
     exit 1
 fi 
 
@@ -85,7 +85,7 @@ ApplicationSnapshotReplication="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: ApplicationSnapshotReplication
 metadata:
   name: $SNAP-replication
-  namespace: $SNAPSHOTNAMESPACE
+  namespace: $APPSNAPSHOTNAMESPACE
 spec:
   applicationSnapshotName: $SNAP
   replicationTargetName: $REPLICATIONTARGET"
