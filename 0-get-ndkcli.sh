@@ -25,14 +25,25 @@ IFS=$'\n\t'
 echo 'open browser to site : https://portal.nutanix.com/page/downloads?product=ndk and find "CLI for Nutanix Data Services for Kubernetes (linux-amd64)" '
 read -p "Enter download link: " url < /dev/tty
 
-# Check if URL is empty
-if [ -z "$url" ]; then
-    echo "No URL provided. Exiting."
+# Download the file with wget and check for errors
+wget -O ndkcli.tgz "$url"
+if [ $? -ne 0 ]; then
+    echo "Download failed. Exiting."
     exit 1
 fi
 
-# Curl the file and pipe straight to tar to extract to /usr/local/bin
-curl -fsSL "$url" | sudo tar xz -C /usr/local/bin -- ndkcli
+# Extract the downloaded file and check for errors
+tar xzf ndkcli.tgz 
+if [ $? -ne 0 ]; then
+    echo "Extraction failed. Exiting."
+    exit 1
+fi
+
+# Clean up downloaded files
+rm -f ndkcli.tgz
+
+#rename extracted file to ndkcli
+mv ndkcli-linux-amd64 ndkcli
 
 # Success message
 echo "NDK CLI installed successfully!"
