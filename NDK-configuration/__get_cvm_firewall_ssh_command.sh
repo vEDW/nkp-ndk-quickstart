@@ -49,7 +49,7 @@ PENAMES=$(get_aos_clusters_name)
 select PENAME in $PENAMES; do 
     echo "you selected PE Cluster : ${PENAME}"
     echo 
-    PENAME="${PENAME}"
+    PENAME=${PENAME}
     PENAMELOWERCASE=$(echo "${PENAME}"| tr '[:upper:]' '[:lower:]' )
     break
 done
@@ -67,7 +67,13 @@ echo
 
 # get cvm and virtual IPS
 CVMIPS=$(get_cvm_ips $PEUUID)
+echo "CVM IPs"
+echo $CVMIPS
+echo
 VIPIPS=$(get_cluster_virtualip $PEUUID)
+echo "Virtual IP"
+echo $VIPIPS
+echo
 #convert ips to comma separated
 CVMIPSCSV=$(echo $CVMIPS | tr '\n' ',' | sed 's/,$//')
 
@@ -76,5 +82,5 @@ echo
 echo "Command to enable firewall rules for sync replication for NDK if needed :"
 echo 
 echo "!! this needs to be run on remote NCI cluster cvm !!"
-echo "allssh 'modify_firewall -f -r '$CVMIPSCSV,$VIPIPS' -p 2030,2036,2073,2090,8740 -i eth0'"
+echo "allssh 'modify_firewall -f -r ${CVMIPSCSV},${VIPIPS} -p 2030,2036,2073,2090,8740 -i eth0'"
 
