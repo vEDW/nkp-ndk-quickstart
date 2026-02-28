@@ -50,22 +50,35 @@ echo "about to install Nutanix Data Services for Kubernetes on cluster : $CLUSTE
 echo "press enter to confirm or CTRL-C to cancel"
 read
 
+
+
 echo "checking NDK "
-k8sdir=$(ls -d ndk-*)
-# Check if directory is empty
-if [[ ! -d "$k8sdir" ]]; then
-    echo "No k8s agent directory. Exiting."
+NDKDIRS=$(ls -d ndk-*)
+if [ $? -ne 0 ]; then
+    echo "No NDK directory. Exiting."
     exit 1
+fi
+#check if more than 1 directory starts with ndk-
+NDKDIRCOUNT=$(ls -d ndk-* | wc -l)
+if [ $NDKDIRCOUNT -gt 1 ]; then
+echo
+echo "Select NDK version to deploy or CTRL-C to quit"
+select NDKDIR in $NDKDIRS; do 
+    echo "you selected NDK version : ${NDKDIR}"
+    echo 
+    break
+done
+
 fi
 
 echo "getting ndk chart version"
-ChartName=$(yq e '.name' $k8sdir/chart/Chart.yaml)
+ChartName=$(yq e '.name' $NDKDIR/chart/Chart.yaml)
 if [ $? -ne 0 ]; then
     echo "Error getting chart name. Exiting."
     exit 1
 fi
 
-ChartVersion=$(yq e '.version' $k8sdir/chart/Chart.yaml)
+ChartVersion=$(yq e '.version' $NDKDIR/chart/Chart.yaml)
 if [ $? -ne 0 ]; then
     echo "Error getting chart version. Exiting."
     exit 1
