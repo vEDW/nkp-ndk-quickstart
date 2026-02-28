@@ -76,5 +76,5 @@ echo
 echo "Command to enable firewall rules for sync replication for NDK if needed :"
 echo 
 echo "!! this needs to be run on remote NCI cluster cvm !!"
-echo "allssh 'modify_firewall -f -r $CVMIPSCSV,$VIPIPS -p 2030,2036,2073,2090,8740 -i eth0'"
+echo "allssh 'modify_firewall -f -r '$CVMIPSCSV,$VIPIPS' -p 2030,2036,2073,2090,8740 -i eth0'"
 
