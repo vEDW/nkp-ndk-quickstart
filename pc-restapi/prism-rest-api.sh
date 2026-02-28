@@ -100,3 +100,15 @@ get_PC_clusters_uuid(){
     PCUUID=$(get_clusters_v4 |jq '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.extId')
     echo $PCUUID
 }
+
+get_cvm_ips() {
+    CLUSTER_UUID=$1
+    RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.0.b2/config/clusters/$CLUSTER_UUID/hosts")
+    echo $RESPONSEJSON | jq -r '.data[].controllerVm.externalAddress.ipv4.value'
+}
+
+get_cluster_virtualip() {
+    CLUSTER_UUID=$1
+    RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.0.b2/config/clusters/$CLUSTER_UUID")
+    echo $RESPONSEJSON | jq -r '.data.network.externalAddress|select(.ipv4 != null)|.ipv4.value'
+}
