@@ -58,6 +58,21 @@ select NAMESPACE in $NAMESPACES; do
     break
 done
 
+#Select jobscheduler in namespace
+JOBSCHEDULERS=$(kubectl get JobScheduler -n $SOURCENAMESPACE --no-headers=true |awk '{print $1}' |sort -u)
+#check if empty
+if [ -z "$JOBSCHEDULERS" ]; then
+    echo "No JobSchedulers found in namespace $SOURCENAMESPACE. Please create a JobScheduler first."
+    exit 1
+fi
+echo
+echo "Select jobscheduler or CTRL-C to quit"
+select JOBSCHEDULER in $JOBSCHEDULERS; do 
+    echo "you selected jobscheduler : ${JOBSCHEDULER}"
+    echo 
+    break
+done
+
 #select retention count - min is 1 max is 15
 echo
 echo "Enter snapshot retention count (number of snapshots to keep - between 1 and 15):"
@@ -80,6 +95,7 @@ metadata:
  namespace: $SOURCENAMESPACE
 spec: 
  protectionType: async
+ scheduleName: $JOBSCHEDULER 
  retentionPolicy: 
      retentionCount: $RETENTIONCOUNT"
 
