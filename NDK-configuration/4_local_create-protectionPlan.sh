@@ -99,7 +99,7 @@ spec:
  retentionPolicy: 
      retentionCount: $RETENTIONCOUNT"
 
-YAMLFILE=ndk-$SOURCENAMESPACE-local-ProtectionPlan.yaml
+YAMLFILE=./yamls/ndk-$SOURCENAMESPACE-local-ProtectionPlan.yaml
 
 
 echo "$PROTECTIONPLAN" | yq e > $YAMLFILE

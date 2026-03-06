@@ -103,7 +103,7 @@ spec:
   protectionPlanNames:
   - $PROTECTIONPLAN"
 
-YAMLFILE=ndk-$APPLICATION-AppProtectionPlan.yaml
+YAMLFILE=./yamls/ndk-$APPLICATION-AppProtectionPlan.yaml
 
 
 echo "$APPPROTECTIONPLAN" | yq e > $YAMLFILE

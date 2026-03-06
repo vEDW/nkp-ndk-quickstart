@@ -90,7 +90,7 @@ spec:
   applicationSnapshotName: $SNAP
   replicationTargetName: $REPLICATIONTARGET"
   
-YAMLFILE=ndk-$SNAP-replication.yaml
+YAMLFILE=./yamls/ndk-$SNAP-replication.yaml
 
 echo "$ApplicationSnapshotReplication" | yq e > $YAMLFILE
 echo "$YAMLFILE created"

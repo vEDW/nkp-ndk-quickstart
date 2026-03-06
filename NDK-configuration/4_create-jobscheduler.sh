@@ -79,7 +79,7 @@ spec:
   minutes: $INTERVAL
  timeZoneName: "Etc/UTC""
 
-YAMLFILE=ndk-$SOURCENAMESPACE-$INTERVAL-jobscheduler.yaml
+YAMLFILE=./yamls/ndk-$SOURCENAMESPACE-$INTERVAL-jobscheduler.yaml
 
 
 echo "$JOBSCHEDULER" | yq e > $YAMLFILE

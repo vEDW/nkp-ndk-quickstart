@@ -75,7 +75,7 @@ spec:
   tlsConfig:
     skipTLSVerify: true"
 
-YAMLFILE=ndk-$PRIMARYNAME-remote.yaml
+YAMLFILE=./yamls/ndk-$PRIMARYNAME-remote.yaml
 
 
 echo "$StorageCluster" | yq e > $YAMLFILE

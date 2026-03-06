@@ -111,7 +111,7 @@ metadata:
 spec:
   applicationSnapshotName: $SNAP"
 
-YAMLFILE=restore-$SNAP.yaml
+YAMLFILE=./yamls/restore-$SNAP.yaml
 echo "$SNAPRESTOREYAML" | yq e > $YAMLFILE
 echo "Snapshot restore YAML file created : $YAMLFILE"
 kubectl apply -f $YAMLFILE

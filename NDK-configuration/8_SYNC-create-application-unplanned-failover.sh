@@ -118,7 +118,7 @@ metadata:
 spec:
   applicationName: $APPLICATION"
 
-YAMLFILE=ndk-$APPLICATION-AppPlannedFailover.yaml
+YAMLFILE=./yamls/ndk-$APPLICATION-AppPlannedFailover.yaml
 
 
 echo "$APPPLANNEDFAILOVER" | yq e > $YAMLFILE
