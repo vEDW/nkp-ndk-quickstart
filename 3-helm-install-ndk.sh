@@ -61,14 +61,15 @@ fi
 #check if more than 1 directory starts with ndk-
 NDKDIRCOUNT=$(ls -d ndk-* | wc -l)
 if [ $NDKDIRCOUNT -gt 1 ]; then
-echo
-echo "Select NDK version to deploy or CTRL-C to quit"
-select NDKDIR in $NDKDIRS; do 
-    echo "you selected NDK version : ${NDKDIR}"
-    echo 
-    break
-done
-
+    echo
+    echo "Select NDK version to deploy or CTRL-C to quit"
+    select NDKDIR in $NDKDIRS; do 
+        echo "you selected NDK version : ${NDKDIR}"
+        echo 
+        break
+    done
+else
+    NDKDIR=$NDKDIRS
 fi
 
 echo "getting ndk chart version"
