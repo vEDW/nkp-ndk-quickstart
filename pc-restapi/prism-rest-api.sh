@@ -81,8 +81,8 @@ call_curl(){
 
 get_clusters_v4() {
     RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.0.b2/config/clusters")
-    echo $RESPONSEJSON > clusters.json
-    echo $RESPONSEJSON
+    echo $RESPONSEJSON |jq . > clusters.json
+    echo $RESPONSEJSON |jq . 
 }
 
 get_aos_clusters_name(){

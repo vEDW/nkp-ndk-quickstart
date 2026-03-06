@@ -46,6 +46,10 @@ export PCIPADDRESS=$CSIPC
 source ../pc-restapi/prism-rest-api.sh
 echo echo "getting aos clusters"
 PENAMES=$(get_aos_clusters_name) 
+if [ "$PENAMES" == "" ]; then
+    echo "getting PE cluster names error. Exiting."
+    exit 1
+fi
 select PENAME in $PENAMES; do 
     echo "you selected PE Cluster : ${PENAME}"
     echo 
