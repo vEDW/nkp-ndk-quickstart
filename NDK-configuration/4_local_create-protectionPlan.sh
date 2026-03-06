@@ -38,39 +38,12 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-#Select source namespace
-echo
-echo "Listing namespaces with Replication Target defined"
-echo
-NAMESPACES=$(kubectl get replicationtarget --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
-#check if empty
-if [ -z "$NAMESPACES" ]; then
-    echo "No namespaces with Replication Target found. Please create a Replication Target first."
-    exit 1
-fi
-
 echo
 echo "Select namespace to protect or CTRL-C to quit"
 select NAMESPACE in $NAMESPACES; do 
     echo "you selected source namespace : ${NAMESPACE}"
     echo 
     SOURCENAMESPACE="${NAMESPACE}"
-    break
-done
-
-#select ReplicationTarget in selected namespace
-REPLICATIONTARGETS=$(kubectl get replicationtarget -n $SOURCENAMESPACE --no-headers=true |awk '{print $1}' |sort -u)
-#check if empty
-if [ -z "$REPLICATIONTARGETS" ]; then
-    echo "No Replication Targets found in namespace $SOURCENAMESPACE. Please create a Replication Target first."
-    exit 1
-fi 
-
-echo
-echo "Select replication target or CTRL-C to quit"
-select REPLICATIONTARGET in $REPLICATIONTARGETS; do 
-    echo "you selected replication target : ${REPLICATIONTARGET}"
-    echo 
     break
 done
 
@@ -99,7 +72,7 @@ spec:
  retentionPolicy: 
      retentionCount: $RETENTIONCOUNT"
 
-YAMLFILE=ndk-$SOURCENAMESPACE-$REPLICATIONTARGET-ProtectionPlan.yaml
+YAMLFILE=ndk-$SOURCENAMESPACE-local-ProtectionPlan.yaml
 
 
 echo "$PROTECTIONPLAN" | yq e > $YAMLFILE
