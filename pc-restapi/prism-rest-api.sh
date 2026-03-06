@@ -97,7 +97,7 @@ get_aos_clusters_uuid(){
 }
 
 get_PC_clusters_uuid(){
-    PCUUID=$(get_clusters_v4 |jq '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.extId')
+    PCUUID=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.extId')
     echo $PCUUID
 }
 
