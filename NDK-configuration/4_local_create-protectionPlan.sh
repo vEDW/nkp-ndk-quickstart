@@ -38,6 +38,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+#Select source namespace
+echo
+echo "Listing namespaces with Application CR defined"
+echo
+NAMESPACES=$(kubectl get application --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
+#check if empty
+if [ -z "$NAMESPACES" ]; then
+    echo "No namespaces with Application CR found. Please create an Application CR first."
+    exit 1
+fi
+
 echo
 echo "Select namespace to protect or CTRL-C to quit"
 select NAMESPACE in $NAMESPACES; do 
