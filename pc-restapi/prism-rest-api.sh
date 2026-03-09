@@ -38,7 +38,7 @@ call_curl(){
 
     case $REQUEST in
         GET)
-            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD" --header 'accept: application/json' --retry 5 --retry-delay 0 --retry-all-errors--request GET --url ${URL}${APIURL})
+            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD" --header 'accept: application/json' --retry 5 --retry-delay 0 --retry-all-errors --request GET --url ${URL}${APIURL})
             ;;
         POST)
             if [[ "$CALLDATA" == "" ]]
