@@ -38,7 +38,7 @@ call_curl(){
 
     case $REQUEST in
         GET)
-            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD" --header 'accept: application/json' --request GET  -H 'X-Nutanix-Client-Type: ui' --url ${URL}${APIURL})
+            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD" --header 'accept: application/json' --retry 5 --retry-delay 0 --retry-all-errors--request GET --url ${URL}${APIURL})
             ;;
         POST)
             if [[ "$CALLDATA" == "" ]]
@@ -46,7 +46,7 @@ call_curl(){
                 echo "call_curl - CALLDATA not set"
                 exit 1
             fi
-            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD"  --header 'accept: application/json' -H 'X-Nutanix-Client-Type: ui' --request POST --header 'content-type: application/json' --data "${CALLDATA}" --url ${URL}${APIURL})
+            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD"  --header 'accept: application/json' --retry 5 --retry-delay 0 --retry-all-errors --request POST --header 'content-type: application/json' --data "${CALLDATA}" --url ${URL}${APIURL})
             ;;
     esac
     #returns json
