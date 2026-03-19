@@ -86,13 +86,13 @@ get_clusters_v4() {
 }
 
 get_aos_clusters_name(){
-    CLUSTERNAME=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "AOS")|.name' 2>)
+    CLUSTERNAME=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "AOS")|.name')
     echo $CLUSTERNAME
 }
 
 get_aos_clusters_uuid(){
     PENAME=$1
-    CLUSTERUUID=$(get_clusters_v4 |jq -r --arg PENAME $PENAME  '.data[]| select((.config.clusterFunction[] == "AOS") and (.name == $PENAME))|.extId' 2>)
+    CLUSTERUUID=$(get_clusters_v4 |jq -r --arg PENAME $PENAME  '.data[]| select((.config.clusterFunction[] == "AOS") and (.name == $PENAME))|.extId')
     echo $CLUSTERUUID
 }
 
