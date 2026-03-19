@@ -125,23 +125,23 @@ NDKIMGREPO=$(cat "./ndkimagerepo")
 
 #ndk manager
 MGRREPO=$(echo "$NDKIMGREPO"  |grep /manager |awk -F ':' '{print $1}' )
-MGRTAG=$(echo "$NDKIMGREPO"  |grep /manager |awk -F ':' '{print $2}')
+MGRTAG=$(echo "$NDKIMGREPO"  |grep /manager |rev |awk -F ':' '{print $1}' |rev )
 
 #infra-manager
 INFRAMGRREPO=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $1}' )
-INFRAMGRTAG=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $2}')
+INFRAMGRTAG=$(echo "$NDKIMGREPO"  |grep /infra-manager |rev |awk -F ':' '{print $1}' |rev )
 
 #KUBECTL
 KUBECTLREPO=$(echo "$NDKIMGREPO"  |grep /kubectl |awk -F ':' '{print $1}' )
-KUBECTLTAG=$(echo "$NDKIMGREPO"  |grep /kubectl |awk -F ':' '{print $2}')
+KUBECTLTAG=$(echo "$NDKIMGREPO"  |grep /kubectl |rev |awk -F ':' '{print $1}' |rev )
 
 #job-scheduler
 JOBREPO=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $1}' )
-JOBTAG=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $2}')
+JOBTAG=$(echo "$NDKIMGREPO"  |grep /job |rev |awk -F ':' '{print $1}' |rev )
 
 #kube-rbac-proxy
 KUBERBACREPO=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $1}' )
-KUBERBACTAG=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $2}')
+KUBERBACTAG=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |rev |awk -F ':' '{print $1}' |rev )
 
 helm install ndk -n ntnx-system  $NDKDIR/chart \
 --set manager.repository=$MGRREPO \
