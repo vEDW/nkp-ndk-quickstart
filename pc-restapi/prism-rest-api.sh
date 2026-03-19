@@ -31,7 +31,7 @@ call_curl(){
     CALLDATA=${3}  # json post data
 
     #make the curl more readable
-    URL="https://${PCIPADDRESS}:9440/api/"
+    URL="https://${PCIPADDRESS}:9440/api"
     
     #URL="https://${PCIPADDRESS}:9440/PrismGateway/services/rest"
     
@@ -81,23 +81,23 @@ call_curl(){
 
 get_clusters_v4() {
     RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.1/config/clusters")
-    echo $RESPONSEJSON |jq . > clusters.json
+    echo $RESPONSEJSON > clusters.json
     echo $RESPONSEJSON |jq . 
 }
 
 get_aos_clusters_name(){
-    CLUSTERNAME=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "AOS")|.name')
+    CLUSTERNAME=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "AOS")|.name' 2>)
     echo $CLUSTERNAME
 }
 
 get_aos_clusters_uuid(){
     PENAME=$1
-    CLUSTERUUID=$(get_clusters_v4 |jq -r --arg PENAME $PENAME  '.data[]| select((.config.clusterFunction[] == "AOS") and (.name == $PENAME))|.extId')
+    CLUSTERUUID=$(get_clusters_v4 |jq -r --arg PENAME $PENAME  '.data[]| select((.config.clusterFunction[] == "AOS") and (.name == $PENAME))|.extId' 2>)
     echo $CLUSTERUUID
 }
 
 get_PC_clusters_uuid(){
-    PCUUID=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.extId')
+    PCUUID=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.extId' )
     echo $PCUUID
 }
 
