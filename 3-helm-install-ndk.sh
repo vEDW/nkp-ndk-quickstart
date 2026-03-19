@@ -124,23 +124,23 @@ NDKSECRET=nutanix-csi-credentials
 NDKIMGREPO=$(cat "./ndkimagerepo")
 
 #ndk manager
-MGRREPO=$(echo "$NDKIMGREPO"  |grep /manager |rev |awk -F ':' '{print $2}'|rev )
+MGRREPO=$(echo "$NDKIMGREPO"  |grep /manager | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
 MGRTAG=$(echo "$NDKIMGREPO"  |grep /manager |rev |awk -F ':' '{print $1}' |rev )
 
 #infra-manager
-INFRAMGRREPO=$(echo "$NDKIMGREPO"  |grep /infra-manager |rev |awk -F ':' '{print $2}'|rev )
+INFRAMGRREPO=$(echo "$NDKIMGREPO"  |grep /infra-manager | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
 INFRAMGRTAG=$(echo "$NDKIMGREPO"  |grep /infra-manager |rev |awk -F ':' '{print $1}' |rev )
 
 #KUBECTL
-KUBECTLREPO=$(echo "$NDKIMGREPO"  |grep /kubectl |rev |awk -F ':' '{print $2}'|rev )
+KUBECTLREPO=$(echo "$NDKIMGREPO"  |grep /kubectl | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
 KUBECTLTAG=$(echo "$NDKIMGREPO"  |grep /kubectl |rev |awk -F ':' '{print $1}' |rev )
 
 #job-scheduler
-JOBREPO=$(echo "$NDKIMGREPO"  |grep /job |rev |awk -F ':' '{print $2}'|rev )
+JOBREPO=$(echo "$NDKIMGREPO"  |grep /job | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
 JOBTAG=$(echo "$NDKIMGREPO"  |grep /job |rev |awk -F ':' '{print $1}' |rev )
 
 #kube-rbac-proxy
-KUBERBACREPO=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |rev |awk -F ':' '{print $2}'|rev )
+KUBERBACREPO=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
 KUBERBACTAG=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |rev |awk -F ':' '{print $1}' |rev )
 
 helm install ndk -n ntnx-system  $NDKDIR/chart \
