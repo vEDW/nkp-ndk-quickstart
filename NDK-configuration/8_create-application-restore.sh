@@ -17,7 +17,6 @@
 # Maintainer:   Eric De Witte (eric.dewitte@nutanix.com)
 # Contributors: 
 #------------------------------------------------------------------------------
-set -euo pipefail
 IFS=$'\n\t'
 
 
