@@ -17,6 +17,9 @@
 # Maintainer:   Eric De Witte (eric.dewitte@nutanix.com)
 # Contributors: 
 #------------------------------------------------------------------------------
+set -euo pipefail
+IFS=$'\n\t'
+
 
 echo
 echo "This script helps create an Application Snapshot Restore CR"
