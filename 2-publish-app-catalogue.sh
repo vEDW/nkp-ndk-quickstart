@@ -24,40 +24,14 @@
 #------------------------------------------------------------------------------
 
 NDKVERSION="2.0.0"
-
-# check if ndk-$NDKVERSION-airgapped.tar was created
-if [ ! -f "ndk-$NDKVERSION-airgapped.tar" ]; then
-    echo "ndk-$NDKVERSION-airgapped.tar not found. Exiting."
-    echo "Run script 0-create-nkp-ndk-catalogue.sh to create the catalogue bundle first."
+# check if ndk-registry-url.env exists
+if [ ! -f "ndk-registry-url.env" ]; then
+    echo "ndk-registry-url.env not found. Exiting."
     exit 1
 fi
 
-# Prompt the user for the registry server name
-echo
-read -p "Enter private registry (no https prefix): " registry < /dev/tty
-echo
-read -p "Enter private registry repository: " registryrepo < /dev/tty
-echo
-read -p "Enter private registry username : " REGISTRY_USERNAME < /dev/tty
-echo
-read -sp "Enter private registry password: " REGISTRY_PASSWORD < /dev/tty
-echo
-
-REGISTRY_URL="${registry}/${registryrepo}"
-nkp push bundle --bundle ndk-$NDKVERSION-airgapped.tar \
-    --to-registry-mirror-url=${REGISTRY_URL} \
-    --to-registry-mirror-username=${REGISTRY_USERNAME} \
-    --to-registry-mirror-password=${REGISTRY_PASSWORD}
-
-#check if nkp push was successful
-if [ $? -ne 0 ]; then
-    echo "nkp push failed. Exiting."
-    exit 1
-fi
-echo 
-echo "Bundle pushed to ${REGISTRY_URL} successfully."
-echo
-echo "${REGISTRY_URL}" > ndk-registry-url.env
+# read the registry URL from the environment file
+REGISTRY_URL=$(cat ndk-registry-url.env)
 
 echo "Creating NDK catalogue application in Kommander workspace"
 
