@@ -44,14 +44,27 @@ read -sp "Enter private registry password: " REGISTRY_PASSWORD < /dev/tty
 echo
 
 REGISTRY_URL="${registry}/${registryrepo}"
-nkp push bundle --bundle ndk-$NDKVERSION-airgapped.tar 
---to-registry-mirror-url=${REGISTRY_URL} 
---to-registry-mirror-username=${REGISTRY_USERNAME} \
---to-registry-mirror-password=${REGISTRY_PASSWORD}
+nkp push bundle --bundle ndk-$NDKVERSION-airgapped.tar \
+    --to-registry-mirror-url=${REGISTRY_URL} \
+    --to-registry-mirror-username=${REGISTRY_USERNAME} \
+    --to-registry-mirror-password=${REGISTRY_PASSWORD}
 
 #check if nkp push was successful
 if [ $? -ne 0 ]; then
     echo "nkp push failed. Exiting."
     exit 1
 fi
+echo 
+echo "Bundle pushed to ${REGISTRY_URL} successfully."
+echo
+
+echo "Creating NDK catalogue application in Kommander workspace"
+
+nkp create catalog-application --url oci://$REGISTRY_URL/nkp-nutanix-product-catalog/ndk --tag "$NDKVERSION" --workspace kommander-workspace
+if [ $? -ne 0 ]; then
+    echo "nkp create catalog-application failed. Exiting."
+    exit 1
+fi
+echo
+echo "NDK catalogue application created successfully in Kommander workspace."
 
