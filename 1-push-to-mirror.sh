@@ -45,7 +45,7 @@ echo
 
 REGISTRY_URL="${registry}/${registryrepo}"
 nkp push bundle --bundle nkp-nutanix-product-catalog/ndk-$NDKVERSION-airgapped.tar \
-    --to-registry-url=${REGISTRY_URL} \
+    --to-registry=${REGISTRY_URL} \
     --to-registry-username=${REGISTRY_USERNAME} \
     --to-registry-password=${REGISTRY_PASSWORD} \
     --to-registry-insecure-skip-tls-verify
