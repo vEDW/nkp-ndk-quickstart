@@ -57,16 +57,3 @@ if [ $? -ne 0 ]; then
 fi
 echo 
 echo "Bundle pushed to ${REGISTRY_URL} successfully."
-echo
-echo "${REGISTRY_URL}" > ndk-registry-url.env
-
-echo "Creating NDK catalogue application in Kommander workspace"
-
-nkp create catalog-application --url oci://$REGISTRY_URL/nkp-nutanix-product-catalog/ndk --tag "$NDKVERSION" --workspace kommander-workspace
-if [ $? -ne 0 ]; then
-    echo "nkp create catalog-application failed. Exiting."
-    exit 1
-fi
-echo
-echo "NDK catalogue application created successfully in Kommander workspace."
-
