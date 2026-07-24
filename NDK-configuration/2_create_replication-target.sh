@@ -115,5 +115,9 @@ YAMLFILE=./yamls/ndk-$PRIMARYNAME-ReplicationTarget.yaml
 echo "$StorageCluster" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
+echo 
+yq e $YAMLFILE
+echo 
+echo
 echo "run to apply to cluster:"
 echo "kubectl apply -f $YAMLFILE "

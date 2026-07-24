@@ -105,5 +105,9 @@ YAMLFILE=./yamls/ndk-$SOURCENAMESPACE-local-ProtectionPlan.yaml
 echo "$PROTECTIONPLAN" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
+echo 
+yq e $YAMLFILE
+echo 
+echo
 echo "run to apply to cluster:"
 echo "kubectl apply -f $YAMLFILE "

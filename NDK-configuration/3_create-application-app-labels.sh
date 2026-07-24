@@ -82,5 +82,11 @@ spec:
 YAMLFILE=./yamls/applicationcr-$APPNAME.yaml
 echo "$ApplicationCR" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
+echo 
+echo 
+yq e $YAMLFILE
+echo 
+echo
+
 echo "to apply run : "
 echo "kubectl apply -f $YAMLFILE"

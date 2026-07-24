@@ -79,6 +79,11 @@ call_curl(){
 	esac
 }
 
+check_pc_version() {
+    HEADERS=$(curl -s -k  -i --url ${URL})
+    VERSION=$(echo "$HEADERS" | grep "x-ntnx-product" | awk -F ': ' '{print $2}' |sort -u)
+    echo "Product Version: $PRODUCT"
+}
 get_clusters_v4() {
     RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.1/config/clusters")
     echo $RESPONSEJSON > clusters.json
