@@ -85,11 +85,14 @@ spec:
  replicationConfigs:
    - replicationTargetName: $REPLICATIONTARGET"
 
-YAMLFILE=ndk-$SOURCENAMESPACE-$REPLICATIONTARGET-ProtectionPlan.yaml
-
+YAMLFILE=./yamls/ndk-$SOURCENAMESPACE-$REPLICATIONTARGET-ProtectionPlan.yaml
 
 echo "$PROTECTIONPLAN" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
+echo 
+echo 
+yq e $YAMLFILE
+echo 
 echo 
 echo "run to apply to cluster:"
 echo "kubectl apply -f $YAMLFILE "

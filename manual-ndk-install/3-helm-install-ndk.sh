@@ -50,22 +50,36 @@ echo "about to install Nutanix Data Services for Kubernetes on cluster : $CLUSTE
 echo "press enter to confirm or CTRL-C to cancel"
 read
 
+
+
 echo "checking NDK "
-k8sdir=$(ls -d ndk-*)
-# Check if directory is empty
-if [[ ! -d "$k8sdir" ]]; then
-    echo "No k8s agent directory. Exiting."
+NDKDIRS=$(ls -d ndk-*)
+if [ $? -ne 0 ]; then
+    echo "No NDK directory. Exiting."
     exit 1
+fi
+#check if more than 1 directory starts with ndk-
+NDKDIRCOUNT=$(ls -d ndk-* | wc -l)
+if [ $NDKDIRCOUNT -gt 1 ]; then
+    echo
+    echo "Select NDK version to deploy or CTRL-C to quit"
+    select NDKDIR in $NDKDIRS; do 
+        echo "you selected NDK version : ${NDKDIR}"
+        echo 
+        break
+    done
+else
+    NDKDIR=$NDKDIRS
 fi
 
 echo "getting ndk chart version"
-ChartName=$(yq e '.name' $k8sdir/chart/Chart.yaml)
+ChartName=$(yq e '.name' $NDKDIR/chart/Chart.yaml)
 if [ $? -ne 0 ]; then
     echo "Error getting chart name. Exiting."
     exit 1
 fi
 
-ChartVersion=$(yq e '.version' $k8sdir/chart/Chart.yaml)
+ChartVersion=$(yq e '.version' $NDKDIR/chart/Chart.yaml)
 if [ $? -ne 0 ]; then
     echo "Error getting chart version. Exiting."
     exit 1
@@ -110,26 +124,26 @@ NDKSECRET=nutanix-csi-credentials
 NDKIMGREPO=$(cat "./ndkimagerepo")
 
 #ndk manager
-MGRREPO=$(echo "$NDKIMGREPO"  |grep /manager |awk -F ':' '{print $1}' )
-MGRTAG=$(echo "$NDKIMGREPO"  |grep /manager |awk -F ':' '{print $2}')
+MGRREPO=$(echo "$NDKIMGREPO"  |grep /manager | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
+MGRTAG=$(echo "$NDKIMGREPO"  |grep /manager |rev |awk -F ':' '{print $1}' |rev )
 
 #infra-manager
-INFRAMGRREPO=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $1}' )
-INFRAMGRTAG=$(echo "$NDKIMGREPO"  |grep /infra-manager |awk -F ':' '{print $2}')
+INFRAMGRREPO=$(echo "$NDKIMGREPO"  |grep /infra-manager | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
+INFRAMGRTAG=$(echo "$NDKIMGREPO"  |grep /infra-manager |rev |awk -F ':' '{print $1}' |rev )
 
 #KUBECTL
-KUBECTLREPO=$(echo "$NDKIMGREPO"  |grep /kubectl |awk -F ':' '{print $1}' )
-KUBECTLTAG=$(echo "$NDKIMGREPO"  |grep /kubectl |awk -F ':' '{print $2}')
+KUBECTLREPO=$(echo "$NDKIMGREPO"  |grep /kubectl | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
+KUBECTLTAG=$(echo "$NDKIMGREPO"  |grep /kubectl |rev |awk -F ':' '{print $1}' |rev )
 
 #job-scheduler
-JOBREPO=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $1}' )
-JOBTAG=$(echo "$NDKIMGREPO"  |grep /job |awk -F ':' '{print $2}')
+JOBREPO=$(echo "$NDKIMGREPO"  |grep /job | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
+JOBTAG=$(echo "$NDKIMGREPO"  |grep /job |rev |awk -F ':' '{print $1}' |rev )
 
 #kube-rbac-proxy
-KUBERBACREPO=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $1}' )
-KUBERBACTAG=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |awk -F ':' '{print $2}')
+KUBERBACREPO=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy | awk -F ':' 'BEGIN{OFS=":"} {NF--; print}')
+KUBERBACTAG=$(echo "$NDKIMGREPO"  |grep /kube-rbac-proxy |rev |awk -F ':' '{print $1}' |rev )
 
-helm install ndk -n ntnx-system  $k8sdir/chart \
+helm install ndk -n ntnx-system  $NDKDIR/chart \
 --set manager.repository=$MGRREPO \
 --set manager.tag=$MGRTAG \
 --set infraManager.repository=$INFRAMGRREPO \

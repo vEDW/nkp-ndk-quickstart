@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #------------------------------------------------------------------------------
 
 # Copyright 2024 Nutanix, Inc
@@ -13,53 +15,31 @@
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #------------------------------------------------------------------------------
+
 # Maintainer:   Eric De Witte (eric.dewitte@nutanix.com)
 # Contributors: 
+
 #------------------------------------------------------------------------------
 
-
-CONTEXTS=$(kubectl config get-contexts --output=name)
-echo
-echo "Select workload cluster on which to configure application CR or CTRL-C to quit"
-select CONTEXT in $CONTEXTS; do 
-    echo "you selected cluster context : ${CONTEXT}"
-    echo 
-    CLUSTERCTX="${CONTEXT}"
-    break
-done
-
-kubectl config use-context $CLUSTERCTX
-if [ $? -ne 0 ]; then
-    echo "kubectl context error. Exiting."
+NDKVERSION="2.0.0"
+# check if ndk-registry-url.env exists
+if [ ! -f "ndk-registry-url.env" ]; then
+    echo "ndk-registry-url.env not found. Exiting."
     exit 1
 fi
 
-NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
-select NS in $NSS; do 
-    echo "you selected namespace : ${NS}"
-    echo 
-    APPNS="${NS}"
-    break
-done
+# read the registry URL from the environment file
+REGISTRY_URL=$(cat ndk-registry-url.env)
 
-ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: Application
-metadata:
-  name: $NS-application
-  namespace: $NS
-spec:
-  applicationSelector:
-    resourceLabelSelectors:
-      - excludeResources:
-          - group: cilium.io
-            kind: CiliumEndpoint
-  start: true
-  useExistingConfig: false
-"
+echo "Creating NDK catalogue application in Kommander workspace"
 
-YAMLFILE=./yamls/applicationcr-$NS-application.yaml
-echo "$ApplicationCR" | yq e > $YAMLFILE
-echo "$YAMLFILE created"
-echo "to apply run : "
-echo "kubectl apply -f $YAMLFILE"
+nkp create catalog-application --url oci://$REGISTRY_URL/nkp-nutanix-product-catalog/ndk --tag "$NDKVERSION" --workspace kommander-workspace
+if [ $? -ne 0 ]; then
+    echo "nkp create catalog-application failed. Exiting."
+    exit 1
+fi
+echo
+echo "NDK catalogue application created successfully in Kommander workspace."
+

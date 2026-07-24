@@ -21,7 +21,7 @@
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to configure application CR or CTRL-C to quit"
+echo "Select workload cluster on which to install agent or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
@@ -35,31 +35,52 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
-select NS in $NSS; do 
-    echo "you selected namespace : ${NS}"
+CSICREDS=$(kubectl get secret nutanix-csi-credentials -n ntnx-system -o yaml |yq e '.data.key' |base64 -d)
+CSIPC=$(echo $CSICREDS |awk -F ':' '{print $1}' )
+CSIUSER=$(echo $CSICREDS |awk -F ':' '{print $3}' )
+CSIPASSWD=$(echo $CSICREDS |awk -F ':' '{print $4}' )
+export PCADMIN=$CSIUSER
+export PCPASSWD=$CSIPASSWD
+export PCIPADDRESS=$CSIPC
+
+source ../pc-restapi/prism-rest-api.sh
+echo echo "getting aos clusters"
+PENAMES=$(get_aos_clusters_name) 
+select PENAME in $PENAMES; do 
+    echo "you selected PE Cluster : ${PENAME}"
     echo 
-    APPNS="${NS}"
+    PENAME=${PENAME}
+    PENAMELOWERCASE=$(echo "${PENAME}"| tr '[:upper:]' '[:lower:]' )
     break
 done
 
-ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: Application
-metadata:
-  name: $NS-application
-  namespace: $NS
-spec:
-  applicationSelector:
-    resourceLabelSelectors:
-      - excludeResources:
-          - group: cilium.io
-            kind: CiliumEndpoint
-  start: true
-  useExistingConfig: false
-"
+echo $PENAME
+echo
+PEUUID=$(get_aos_clusters_uuid $PENAME)
+if [ "$PEUUID" == "" ]; then
+    echo "getting PE $PENAME UUID error. Exiting."
+    exit 1
+fi
 
-YAMLFILE=./yamls/applicationcr-$NS-application.yaml
-echo "$ApplicationCR" | yq e > $YAMLFILE
-echo "$YAMLFILE created"
-echo "to apply run : "
-echo "kubectl apply -f $YAMLFILE"
+echo $PEUUID
+echo
+
+# get cvm and virtual IPS
+CVMIPS=$(get_cvm_ips $PEUUID)
+echo "CVM IPs"
+echo $CVMIPS
+echo
+VIPIPS=$(get_cluster_virtualip $PEUUID)
+echo "Virtual IP"
+echo $VIPIPS
+echo
+#convert ips to comma separated
+CVMIPSCSV=$(echo $CVMIPS | tr '\n' ',' | sed 's/,$//')
+
+echo
+echo
+echo "Command to enable firewall rules for sync replication for NDK if needed :"
+echo 
+echo "!! this needs to be run on remote NCI cluster cvm !!"
+echo "allssh 'modify_firewall -f -r ${CVMIPSCSV},${VIPIPS} -p 2030,2036,2073,2090,8740 -i eth0'"
+

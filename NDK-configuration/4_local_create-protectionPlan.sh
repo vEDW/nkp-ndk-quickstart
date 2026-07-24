@@ -40,12 +40,12 @@ fi
 
 #Select source namespace
 echo
-echo "Listing namespaces with Replication Target defined"
+echo "Listing namespaces with Application CR defined"
 echo
-NAMESPACES=$(kubectl get replicationtarget --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
+NAMESPACES=$(kubectl get application --all-namespaces --no-headers=true |awk '{print $1}' |sort -u)
 #check if empty
 if [ -z "$NAMESPACES" ]; then
-    echo "No namespaces with Replication Target found. Please create a Replication Target first."
+    echo "No namespaces with Application CR found. Please create an Application CR first."
     exit 1
 fi
 
@@ -58,18 +58,17 @@ select NAMESPACE in $NAMESPACES; do
     break
 done
 
-#select ReplicationTarget in selected namespace
-REPLICATIONTARGETS=$(kubectl get replicationtarget -n $SOURCENAMESPACE --no-headers=true |awk '{print $1}' |sort -u)
+#Select jobscheduler in namespace
+JOBSCHEDULERS=$(kubectl get JobScheduler -n $SOURCENAMESPACE --no-headers=true |awk '{print $1}' |sort -u)
 #check if empty
-if [ -z "$REPLICATIONTARGETS" ]; then
-    echo "No Replication Targets found in namespace $SOURCENAMESPACE. Please create a Replication Target first."
+if [ -z "$JOBSCHEDULERS" ]; then
+    echo "No JobSchedulers found in namespace $SOURCENAMESPACE. Please create a JobScheduler first."
     exit 1
-fi 
-
+fi
 echo
-echo "Select replication target or CTRL-C to quit"
-select REPLICATIONTARGET in $REPLICATIONTARGETS; do 
-    echo "you selected replication target : ${REPLICATIONTARGET}"
+echo "Select jobscheduler or CTRL-C to quit"
+select JOBSCHEDULER in $JOBSCHEDULERS; do 
+    echo "you selected jobscheduler : ${JOBSCHEDULER}"
     echo 
     break
 done
@@ -96,14 +95,19 @@ metadata:
  namespace: $SOURCENAMESPACE
 spec: 
  protectionType: async
+ scheduleName: $JOBSCHEDULER 
  retentionPolicy: 
      retentionCount: $RETENTIONCOUNT"
 
-YAMLFILE=ndk-$SOURCENAMESPACE-$REPLICATIONTARGET-ProtectionPlan.yaml
+YAMLFILE=./yamls/ndk-$SOURCENAMESPACE-local-ProtectionPlan.yaml
 
 
 echo "$PROTECTIONPLAN" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
+echo 
+yq e $YAMLFILE
+echo 
+echo
 echo "run to apply to cluster:"
 echo "kubectl apply -f $YAMLFILE "

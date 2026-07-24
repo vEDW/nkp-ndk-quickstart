@@ -31,14 +31,14 @@ call_curl(){
     CALLDATA=${3}  # json post data
 
     #make the curl more readable
-    URL="https://${PCIPADDRESS}:9440/api/"
+    URL="https://${PCIPADDRESS}:9440/api"
     
     #URL="https://${PCIPADDRESS}:9440/PrismGateway/services/rest"
     
 
     case $REQUEST in
         GET)
-            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD" --header 'accept: application/json' --request GET  -H 'X-Nutanix-Client-Type: ui' --url ${URL}${APIURL})
+            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD" --header 'accept: application/json' --retry 5 --retry-all-errors --request GET --url ${URL}${APIURL})
             ;;
         POST)
             if [[ "$CALLDATA" == "" ]]
@@ -46,7 +46,7 @@ call_curl(){
                 echo "call_curl - CALLDATA not set"
                 exit 1
             fi
-            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD"  --header 'accept: application/json' -H 'X-Nutanix-Client-Type: ui' --request POST --header 'content-type: application/json' --data "${CALLDATA}" --url ${URL}${APIURL})
+            RESPONSE=$(curl -s -k -w '####%{response_code}' -u "$PCADMIN:$PCPASSWD"  --header 'accept: application/json' --retry 5 --retry-all-errors --request POST --header 'content-type: application/json' --data "${CALLDATA}" --url ${URL}${APIURL})
             ;;
     esac
     #returns json
@@ -79,10 +79,15 @@ call_curl(){
 	esac
 }
 
+check_pc_version() {
+    HEADERS=$(curl -s -k  -i --url ${URL})
+    VERSION=$(echo "$HEADERS" | grep "x-ntnx-product" | awk -F ': ' '{print $2}' |sort -u)
+    echo "Product Version: $PRODUCT"
+}
 get_clusters_v4() {
-    RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.0.b2/config/clusters")
+    RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.1/config/clusters")
     echo $RESPONSEJSON > clusters.json
-    echo $RESPONSEJSON
+    echo $RESPONSEJSON |jq . 
 }
 
 get_aos_clusters_name(){
@@ -92,11 +97,23 @@ get_aos_clusters_name(){
 
 get_aos_clusters_uuid(){
     PENAME=$1
-    CLUSTERUUID=$(get_clusters_v4 |jq --arg PENAME $PENAME  '.data[]| select((.config.clusterFunction[] == "AOS") and (.name == $PENAME))|.extId')
+    CLUSTERUUID=$(get_clusters_v4 |jq -r --arg PENAME $PENAME  '.data[]| select((.config.clusterFunction[] == "AOS") and (.name == $PENAME))|.extId')
     echo $CLUSTERUUID
 }
 
 get_PC_clusters_uuid(){
-    PCUUID=$(get_clusters_v4 |jq '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.extId')
+    PCUUID=$(get_clusters_v4 |jq -r '.data[]| select(.config.clusterFunction[] == "PRISM_CENTRAL")|.extId' )
     echo $PCUUID
+}
+
+get_cvm_ips() {
+    CLUSTER_UUID=$1
+    RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.1/config/clusters/$CLUSTER_UUID/hosts")
+    echo $RESPONSEJSON | jq -r '.data[].controllerVm.externalAddress.ipv4.value'
+}
+
+get_cluster_virtualip() {
+    CLUSTER_UUID=$1
+    RESPONSEJSON=$(call_curl "GET" "/clustermgmt/v4.1/config/clusters/$CLUSTER_UUID")
+    echo $RESPONSEJSON | jq -r '.data.network.externalAddress|select(.ipv4 != null)|.ipv4.value'
 }

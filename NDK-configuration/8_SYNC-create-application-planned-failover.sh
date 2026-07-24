@@ -119,11 +119,15 @@ metadata:
 spec:
   applicationName: $APPLICATION"
 
-YAMLFILE=ndk-$APPLICATION-AppPlannedFailover.yaml
+YAMLFILE=./yamls/ndk-$APPLICATION-AppPlannedFailover.yaml
 
 
 echo "$APPPLANNEDFAILOVER" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
+echo 
+yq e $YAMLFILE
+echo 
+echo
 echo "run to apply to cluster:"
 echo "kubectl apply -f $YAMLFILE "

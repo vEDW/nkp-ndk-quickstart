@@ -17,6 +17,8 @@
 # Maintainer:   Eric De Witte (eric.dewitte@nutanix.com)
 # Contributors: 
 #------------------------------------------------------------------------------
+set -euo pipefail
+IFS=$'\n\t'
 
 echo
 echo "This script helps create an Application Snapshot Replication CR"
@@ -48,7 +50,7 @@ if [ -z "$APPSNAPSHOTS" ]; then
     echo "No Application Snapshots found. Please create an Application Snapshot first."
     exit 1
 fi
-select SNAP in $APPSNAPSHOTS; do 
+select SNAP in $APPSNAPSHOTNAMES; do 
     echo "you selected application snapshot : ${SNAP}"
     echo 
     break
@@ -90,7 +92,7 @@ spec:
   applicationSnapshotName: $SNAP
   replicationTargetName: $REPLICATIONTARGET"
   
-YAMLFILE=ndk-$SNAP-replication.yaml
+YAMLFILE=./yamls/ndk-$SNAP-replication.yaml
 
 echo "$ApplicationSnapshotReplication" | yq e > $YAMLFILE
 echo "$YAMLFILE created"

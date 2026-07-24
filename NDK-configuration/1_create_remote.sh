@@ -75,11 +75,15 @@ spec:
   tlsConfig:
     skipTLSVerify: true"
 
-YAMLFILE=ndk-$PRIMARYNAME-remote.yaml
+YAMLFILE=./yamls/ndk-$PRIMARYNAME-remote.yaml
 
 
 echo "$StorageCluster" | yq e > $YAMLFILE
 echo "$YAMLFILE created"
 echo 
+echo 
+yq e $YAMLFILE
+echo 
+echo
 echo "run to apply to cluster:"
 echo "kubectl apply -f $YAMLFILE"

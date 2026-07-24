@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #------------------------------------------------------------------------------
 
 # Copyright 2024 Nutanix, Inc
@@ -13,53 +15,45 @@
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #------------------------------------------------------------------------------
+
 # Maintainer:   Eric De Witte (eric.dewitte@nutanix.com)
 # Contributors: 
+
 #------------------------------------------------------------------------------
 
+NDKVERSION="2.0.0"
 
-CONTEXTS=$(kubectl config get-contexts --output=name)
-echo
-echo "Select workload cluster on which to configure application CR or CTRL-C to quit"
-select CONTEXT in $CONTEXTS; do 
-    echo "you selected cluster context : ${CONTEXT}"
-    echo 
-    CLUSTERCTX="${CONTEXT}"
-    break
-done
-
-kubectl config use-context $CLUSTERCTX
-if [ $? -ne 0 ]; then
-    echo "kubectl context error. Exiting."
+# check if ndk-$NDKVERSION-airgapped.tar was created
+if [ ! -f "nkp-nutanix-product-catalog/ndk-$NDKVERSION-airgapped.tar" ]; then
+    echo "ndk-$NDKVERSION-airgapped.tar not found. Exiting."
+    echo "Run script 0-create-nkp-ndk-catalogue.sh to create the catalogue bundle first."
     exit 1
 fi
 
-NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
-select NS in $NSS; do 
-    echo "you selected namespace : ${NS}"
-    echo 
-    APPNS="${NS}"
-    break
-done
+# Prompt the user for the registry server name
+echo
+read -p "Enter private registry (no https prefix): " registry < /dev/tty
+echo
+read -p "Enter private registry repository: " registryrepo < /dev/tty
+echo
+read -p "Enter private registry username : " REGISTRY_USERNAME < /dev/tty
+echo
+read -sp "Enter private registry password: " REGISTRY_PASSWORD < /dev/tty
+echo
 
-ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: Application
-metadata:
-  name: $NS-application
-  namespace: $NS
-spec:
-  applicationSelector:
-    resourceLabelSelectors:
-      - excludeResources:
-          - group: cilium.io
-            kind: CiliumEndpoint
-  start: true
-  useExistingConfig: false
-"
+REGISTRY_URL="${registry}/${registryrepo}"
+nkp push bundle --bundle nkp-nutanix-product-catalog/ndk-$NDKVERSION-airgapped.tar \
+    --to-registry=${REGISTRY_URL} \
+    --to-registry-username=${REGISTRY_USERNAME} \
+    --to-registry-password=${REGISTRY_PASSWORD} \
+    --to-registry-insecure-skip-tls-verify
 
-YAMLFILE=./yamls/applicationcr-$NS-application.yaml
-echo "$ApplicationCR" | yq e > $YAMLFILE
-echo "$YAMLFILE created"
-echo "to apply run : "
-echo "kubectl apply -f $YAMLFILE"
+#check if nkp push was successful
+if [ $? -ne 0 ]; then
+    echo "nkp push failed. Exiting."
+    exit 1
+fi
+echo 
+echo "Bundle pushed to ${REGISTRY_URL} successfully."

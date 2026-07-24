@@ -75,6 +75,8 @@ spec:
       name: $APPNAME 
   expiresAfter: 240m"
 
-echo "$ApplicationSnapshotYAML" | yq e > appsnapshot-$APPNAME.yaml
-kubectl apply -f appsnapshot-$APPNAME.yaml
-kubectl get -f appsnapshot-$APPNAME.yaml -w
+YAMLFILE=./yamls/appsnapshot-$APPNAME.yaml
+
+echo "$ApplicationSnapshotYAML" | yq e > $YAMLFILE
+kubectl apply -f $YAMLFILE
+kubectl get -f $YAMLFILE -w

@@ -18,48 +18,64 @@
 # Contributors: 
 #------------------------------------------------------------------------------
 
+echo
+echo "This script helps check NDK CRs status"
+echo 
 
 CONTEXTS=$(kubectl config get-contexts --output=name)
 echo
-echo "Select workload cluster on which to configure application CR or CTRL-C to quit"
+echo "Select workload cluster or CTRL-C to quit"
 select CONTEXT in $CONTEXTS; do 
     echo "you selected cluster context : ${CONTEXT}"
     echo 
-    CLUSTERCTX="${CONTEXT}"
+    PRIMARYCLUSTERCTX="${CONTEXT}"
     break
 done
 
-kubectl config use-context $CLUSTERCTX
+kubectl config use-context $PRIMARYCLUSTERCTX
 if [ $? -ne 0 ]; then
-    echo "kubectl context error. Exiting."
+    echo "kubectl $PRIMARYCLUSTERCTX context error. Exiting."
     exit 1
 fi
 
-NSS=$(kubectl get ns --no-headers=true |awk '{print $1}')
-select NS in $NSS; do 
-    echo "you selected namespace : ${NS}"
-    echo 
-    APPNS="${NS}"
-    break
-done
+echo
+echo "Checking NDK CR status in all namespaces"
+echo
+echo "StorageCluster:"
+kubectl get storagecluster -A
+echo
+echo "Remote and replicationTarget:"
+kubectl get remote,replicationtarget -A
+echo
+echo "Application:"
+kubectl get application -A
+echo
+echo "ApplicationSnapshot:"
+kubectl get applicationsnapshot -A
+echo
+echo "ApplicationSnapshotRestore:"
+kubectl get applicationsnapshotrestore -A   
+echo
+echo "ApplicationSnapshotReplication:"
+kubectl get applicationsnapshotreplication -A
+echo
+echo "ProtectionPlan:"
+kubectl get protectionplan -A
+echo
+echo "JobScheduler:"
+kubectl get jobscheduler -A
+echo
+echo "AppProtectionPlan:"
+kubectl get AppProtectionPlan -A
+echo
+echo "HAA, HAAC:"
+kubectl get haa,haac -A
+echo
+echo "AppPlannedFailover:"
+kubectl get AppPlannedFailover -A
+echo
+echo "AppUnplannedFailover:"
+kubectl get AppUnplannedFailover -A
 
-ApplicationCR="apiVersion: dataservices.nutanix.com/v1alpha1
-kind: Application
-metadata:
-  name: $NS-application
-  namespace: $NS
-spec:
-  applicationSelector:
-    resourceLabelSelectors:
-      - excludeResources:
-          - group: cilium.io
-            kind: CiliumEndpoint
-  start: true
-  useExistingConfig: false
-"
 
-YAMLFILE=./yamls/applicationcr-$NS-application.yaml
-echo "$ApplicationCR" | yq e > $YAMLFILE
-echo "$YAMLFILE created"
-echo "to apply run : "
-echo "kubectl apply -f $YAMLFILE"
+

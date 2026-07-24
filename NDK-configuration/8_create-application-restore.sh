@@ -17,6 +17,8 @@
 # Maintainer:   Eric De Witte (eric.dewitte@nutanix.com)
 # Contributors: 
 #------------------------------------------------------------------------------
+IFS=$'\n\t'
+
 
 echo
 echo "This script helps create an Application Snapshot Restore CR"
@@ -111,7 +113,7 @@ metadata:
 spec:
   applicationSnapshotName: $SNAP"
 
-YAMLFILE=restore-$SNAP.yaml
+YAMLFILE=./yamls/restore-$SNAP.yaml
 echo "$SNAPRESTOREYAML" | yq e > $YAMLFILE
 echo "Snapshot restore YAML file created : $YAMLFILE"
 kubectl apply -f $YAMLFILE
