@@ -45,9 +45,10 @@ echo
 
 REGISTRY_URL="${registry}/${registryrepo}"
 nkp push bundle --bundle nkp-nutanix-product-catalog/ndk-$NDKVERSION-airgapped.tar \
-    --to-registry-mirror-url=${REGISTRY_URL} \
-    --to-registry-mirror-username=${REGISTRY_USERNAME} \
-    --to-registry-mirror-password=${REGISTRY_PASSWORD}
+    --to-registry-url=${REGISTRY_URL} \
+    --to-registry-username=${REGISTRY_USERNAME} \
+    --to-registry-password=${REGISTRY_PASSWORD} \
+    --to-registry-insecure-skip-tls-verify
 
 #check if nkp push was successful
 if [ $? -ne 0 ]; then
