@@ -26,7 +26,7 @@
 NDKVERSION="2.0.0"
 
 # check if ndk-$NDKVERSION-airgapped.tar was created
-if [ ! -f "ndk-$NDKVERSION-airgapped.tar" ]; then
+if [ ! -f "nkp-nutanix-product-catalog/ndk-$NDKVERSION-airgapped.tar" ]; then
     echo "ndk-$NDKVERSION-airgapped.tar not found. Exiting."
     echo "Run script 0-create-nkp-ndk-catalogue.sh to create the catalogue bundle first."
     exit 1
@@ -44,7 +44,7 @@ read -sp "Enter private registry password: " REGISTRY_PASSWORD < /dev/tty
 echo
 
 REGISTRY_URL="${registry}/${registryrepo}"
-nkp push bundle --bundle ndk-$NDKVERSION-airgapped.tar \
+nkp push bundle --bundle nkp-nutanix-product-catalog/ndk-$NDKVERSION-airgapped.tar \
     --to-registry-mirror-url=${REGISTRY_URL} \
     --to-registry-mirror-username=${REGISTRY_USERNAME} \
     --to-registry-mirror-password=${REGISTRY_PASSWORD}
