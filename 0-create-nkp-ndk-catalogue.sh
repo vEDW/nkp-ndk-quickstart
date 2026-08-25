@@ -58,27 +58,3 @@ if [ $? -ne 0 ]; then
 fi
 
 nkp create catalog-bundle --airgapped --apps=ndk="$NDKVERSION"   --output-file ndk-$NDKVERSION-airgapped.tar
-
-# Prompt the user for the registry server name
-echo
-read -p "Enter private registry (no https prefix): " registry < /dev/tty
-echo
-read -p "Enter private registry repository: " registryrepo < /dev/tty
-echo
-read -p "Enter private registry username : " REGISTRY_USERNAME < /dev/tty
-echo
-read -sp "Enter private registry password: " REGISTRY_PASSWORD < /dev/tty
-echo
-
-REGISTRY_URL="${registry}/${registryrepo}"
-nkp push bundle --bundle ndk-$NDKVERSION-airgapped.tar 
---to-registry-mirror-url=${REGISTRY_URL} 
---to-registry-mirror-username=${REGISTRY_USERNAME} \
---to-registry-mirror-password=${REGISTRY_PASSWORD}
-
-#check if nkp push was successful
-if [ $? -ne 0 ]; then
-    echo "nkp push failed. Exiting."
-    exit 1
-fi
-

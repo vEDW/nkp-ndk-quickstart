@@ -111,10 +111,12 @@ if [[ -z "$DRNAMESPACES" ]]; then
     exit 1
 fi
 
+YAMLDATE=$(date '+%Y-%m-%d-%Hh%M')
+
 APPPLANNEDFAILOVER="apiVersion: dataservices.nutanix.com/v1alpha1
 kind: AppPlannedFailover
 metadata:
-  name: $APPLICATION-pfo
+  name: $APPLICATION-$YAMLDATE-pfo
   namespace: $REPLICATIONTARGETNAMEREMOTENAMESPACE
 spec:
   applicationName: $APPLICATION"
